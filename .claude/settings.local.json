@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn build *)",
+      "Bash(node -e \"const icons = require\\('/Users/temple/Documents/Rachead/management/node_modules/lucide-react'\\); console.log\\(Object.keys\\(icons\\).filter\\(k => ['Instagram','Twitter','Youtube','Globe','Music','Radio'].includes\\(k\\)\\)\\)\")",
+      "Bash(pkill -f \"vite\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/)",
+      "Bash(curl -sI --max-time 8 \"https://picsum.photos/seed/rachead/200/200\")",
+      "Bash(curl -sI --max-time 8 \"https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200\")",
+      "Bash(pkill -9 -f \"vite\")"
+    ]
+  }
+}
