@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Zap, Globe, Music, Radio } from 'lucide-react';
+import { Zap, Globe, Music, Radio, Wallet } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -50,7 +50,7 @@ export default function Footer() {
               {[
                 { label: 'Events', to: '/events' },
                 { label: 'Celebrities', to: '/celebrities' },
-                { label: 'Categories', to: '/events' },
+                { label: 'Sponsorship', to: '/sponsorship' },
                 { label: 'Cities', to: '/events' },
               ].map(item => (
                 <li key={item.label}>
@@ -98,6 +98,25 @@ export default function Footer() {
 
         {/* Divider */}
         <div className="h-px bg-gradient-to-r from-transparent via-[rgba(124,58,237,0.3)] to-transparent mb-8" />
+
+        {/* Crypto payment strip */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 px-4 py-3 rounded-xl bg-[rgba(124,58,237,0.06)] border border-[rgba(124,58,237,0.15)]">
+          <span className="flex items-center gap-2 text-[#A0A0C0] text-xs font-medium">
+            <Wallet size={14} className="text-[#A78BFA]" />
+            All payments are made in crypto
+          </span>
+          <span className="hidden sm:block w-px h-4 bg-[rgba(124,58,237,0.2)]" />
+          <div className="flex items-center gap-2">
+            {[
+              { s: 'USDT', c: '#26A17B' }, { s: 'USDC', c: '#2775CA' }, { s: 'BTC', c: '#F7931A' },
+              { s: 'ETH', c: '#627EEA' }, { s: 'BNB', c: '#F3BA2F' },
+            ].map(coin => (
+              <span key={coin.s} className="w-7 h-7 rounded-full flex items-center justify-center text-[8px] font-black text-white" style={{ background: coin.c }} title={coin.s}>
+                {coin.s}
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

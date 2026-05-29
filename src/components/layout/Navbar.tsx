@@ -27,6 +27,7 @@ export default function Navbar() {
     { to: '/', label: 'Home' },
     { to: '/events', label: 'Events' },
     { to: '/celebrities', label: 'Celebrities' },
+    { to: '/sponsorship', label: 'Sponsorship' },
   ];
 
   const isActive = (to: string) =>

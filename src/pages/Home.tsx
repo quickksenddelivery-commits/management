@@ -4,6 +4,7 @@ import { ArrowRight, ChevronRight, Crown, Star, Zap, Shield } from 'lucide-react
 import EventCard from '../components/common/EventCard';
 import CelebrityCard from '../components/common/CelebrityCard';
 import { celebrities, events, getFeaturedEvents, getUpcomingEvents, formatPrice } from '../data/mock';
+import { sponsors } from '../data/sponsors';
 import { heroBackground, withFallback, celebrityPortrait, celebrityCover, eventPoster } from '../lib/images';
 import type { CelebrityCategory } from '../types';
 
@@ -534,6 +535,30 @@ export default function Home() {
           <div className="text-center mt-12">
             <Link to="/events" className="accent-btn inline-flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base">
               Browse All Events <ArrowRight size={17} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════ PARTNERS / SPONSORS ════════════ */}
+      <section className="py-16 section-fade">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <p className="text-[#7C3AED] text-xs font-bold tracking-widest uppercase mb-2">Trusted By Leading Brands</p>
+            <h2 className="text-4xl font-black text-white">
+              Our <span className="gradient-text-gold">Partners</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            {sponsors.map(s => (
+              <div key={s.id} className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl px-4 py-7 flex items-center justify-center hover:border-[rgba(124,58,237,0.35)] transition-all group">
+                <img src={s.logo} alt={s.name} className="h-7 object-contain opacity-65 group-hover:opacity-100 transition-opacity" />
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <Link to="/sponsorship" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.3)] text-[#FCD34D] font-bold text-sm hover:bg-[rgba(245,158,11,0.18)] transition-all">
+              <Crown size={15} /> Become a Sponsor
             </Link>
           </div>
         </div>

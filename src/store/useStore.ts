@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, CartItem, Ticket } from '../types';
+import type { User, CartItem, Ticket, SponsorshipApplication } from '../types';
 
 interface AppStore {
   user: User | null;
   cart: CartItem[];
+  sponsorshipApplications: SponsorshipApplication[];
   login: (email: string, password: string) => { success: boolean; error?: string };
   register: (name: string, email: string, password: string) => { success: boolean; error?: string };
   logout: () => void;
@@ -15,6 +16,9 @@ interface AppStore {
   toggleSaveEvent: (eventId: string) => void;
   toggleFollow: (celebrityId: string) => void;
   purchaseTickets: (attendeeName: string, attendeeEmail: string) => Ticket[];
+  submitSponsorship: (
+    app: Omit<SponsorshipApplication, 'id' | 'submittedAt' | 'status'>
+  ) => SponsorshipApplication;
 }
 
 export const useStore = create<AppStore>()(
@@ -22,6 +26,7 @@ export const useStore = create<AppStore>()(
     (set, get) => ({
       user: null,
       cart: [],
+      sponsorshipApplications: [],
 
       login: (email, password) => {
         if (!email || !password) return { success: false, error: 'Please fill all fields' };
@@ -122,8 +127,26 @@ export const useStore = create<AppStore>()(
         set({ user: { ...user, tickets: [...user.tickets, ...newTickets] }, cart: [] });
         return newTickets;
       },
+
+      submitSponsorship: (app) => {
+        const application: SponsorshipApplication = {
+          ...app,
+          id: `spo-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
+          submittedAt: new Date().toISOString(),
+          status: 'pending',
+        };
+        set({ sponsorshipApplications: [...get().sponsorshipApplications, application] });
+        return application;
+      },
     }),
-    { name: 'rachead-store', partialize: (s) => ({ user: s.user, cart: s.cart }) }
+    {
+      name: 'rachead-store',
+      partialize: (s) => ({
+        user: s.user,
+        cart: s.cart,
+        sponsorshipApplications: s.sponsorshipApplications,
+      }),
+    }
   )
 );
 

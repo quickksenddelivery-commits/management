@@ -1,11 +1,12 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Calendar, MapPin, Clock, Users, Heart, Share2, CheckCircle, ArrowLeft, Minus, Plus } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Heart, Share2, CheckCircle, ArrowLeft, Minus, Plus, Wallet } from 'lucide-react';
 import { getEvent, getCelebrity, getEventsByCelebrity, formatDate, formatTime, formatPrice } from '../data/mock';
+import { getEventSponsors } from '../data/sponsors';
 import { withFallback, eventPoster, celebrityPortrait } from '../lib/images';
 import { useStore } from '../store/useStore';
 import type { TicketTier } from '../types';
-import { TIER_COLORS } from '../types';
+import { TIER_COLORS, SPONSOR_TIER_LABELS } from '../types';
 import EventCard from '../components/common/EventCard';
 
 const TIER_LABELS = { general: 'General', vip: '⭐ VIP', vvip: '👑 VVIP', meetgreet: '🤝 Meet & Greet' };
@@ -21,7 +22,7 @@ export default function EventDetail() {
   const navigate = useNavigate();
   const event = getEvent(id ?? '');
   const celebrity = event ? getCelebrity(event.celebrityId) : null;
-  const { user, addToCart, toggleSaveEvent } = useStore();
+  const { user, addToCart, toggleSaveEvent, sponsorshipApplications } = useStore();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [added, setAdded] = useState(false);
 
@@ -37,6 +38,8 @@ export default function EventDetail() {
 
   const isSaved = user?.savedEvents.includes(event.id) ?? false;
   const moreByCeleb = getEventsByCelebrity(event.celebrityId).filter(e => e.id !== event.id).slice(0, 3);
+  const eventSponsors = getEventSponsors(event.id);
+  const pendingSponsors = sponsorshipApplications.filter(a => a.eventId === event.id);
 
   const setQty = (tierId: string, delta: number, max: number) => {
     setQuantities(prev => {
@@ -171,6 +174,49 @@ export default function EventDetail() {
               </div>
             )}
 
+            {/* Sponsors */}
+            <div className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-bold text-lg">
+                  {eventSponsors.length > 0 || pendingSponsors.length > 0 ? 'Event Sponsors' : 'Sponsorship'}
+                </h3>
+                <Link to={`/sponsorship?event=${event.id}`} className="text-[#A78BFA] hover:text-white text-xs font-semibold transition-colors">
+                  Sponsor this event →
+                </Link>
+              </div>
+
+              {eventSponsors.length > 0 || pendingSponsors.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  {eventSponsors.map(s => (
+                    <div key={s.id} className="flex items-center gap-3 bg-[rgba(255,255,255,0.03)] border border-[rgba(124,58,237,0.15)] rounded-xl px-4 py-3">
+                      <img src={s.logo} alt={s.name} className="h-5 object-contain" />
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-bold border border-[rgba(124,58,237,0.3)] text-[#A78BFA]">
+                        {SPONSOR_TIER_LABELS[s.tier]}
+                      </span>
+                    </div>
+                  ))}
+                  {pendingSponsors.map(a => (
+                    <div key={a.id} className="flex items-center gap-3 bg-[rgba(245,158,11,0.06)] border border-[rgba(245,158,11,0.3)] rounded-xl px-4 py-3">
+                      <span className="text-white text-sm font-bold">{a.companyName}</span>
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-bold border border-[rgba(245,158,11,0.4)] text-[#FCD34D]">
+                        {a.packageName} · Pending
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[#6060A0] text-sm">
+                  Want your brand here? Become a sponsor and reach thousands of fans at this event.
+                </p>
+              )}
+
+              {pendingSponsors.length > 0 && (
+                <p className="text-[#6060A0] text-xs mt-3">
+                  ⏳ Your sponsorship application is under review — our team will confirm shortly.
+                </p>
+              )}
+            </div>
+
             {/* More events by celebrity */}
             {moreByCeleb.length > 0 && (
               <div>
@@ -281,6 +327,12 @@ export default function EventDetail() {
                   Go to Checkout
                 </Link>
               )}
+
+              {/* Crypto payment note */}
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-[#6060A0] text-xs">
+                <Wallet size={12} className="text-[#A78BFA]" />
+                <span>Pay securely in crypto — USDT, USDC, BTC, ETH & BNB</span>
+              </div>
             </div>
           </div>
         </div>

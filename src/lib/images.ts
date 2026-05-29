@@ -170,6 +170,29 @@ export function eventPoster(seed: string, cat: CelebrityCategory): string {
   return encode(svg);
 }
 
+/* ───────────────── Sponsor / partner wordmark logo ───────────────── */
+export function sponsorLogo(name: string, color: string): string {
+  const h = hashCode(name);
+  const shape = h % 4;
+  const cx = 45, cy = 45;
+  let mark: string;
+  if (shape === 0) {
+    mark = `<circle cx='${cx}' cy='${cy}' r='26' fill='${color}'/><circle cx='${cx}' cy='${cy}' r='11' fill='#0D0D1A'/>`;
+  } else if (shape === 1) {
+    mark = `<rect x='22' y='22' width='46' height='46' rx='11' fill='${color}' transform='rotate(45 ${cx} ${cy})'/>`;
+  } else if (shape === 2) {
+    mark = `<polygon points='45,16 71,31 71,59 45,74 19,59 19,31' fill='${color}'/><circle cx='${cx}' cy='${cy}' r='10' fill='#0D0D1A'/>`;
+  } else {
+    mark = `<rect x='24' y='44' width='12' height='26' rx='3' fill='${color}'/><rect x='40' y='30' width='12' height='40' rx='3' fill='${color}'/><rect x='56' y='20' width='12' height='50' rx='3' fill='${color}'/>`;
+  }
+  const width = 108 + name.length * 21;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='90' viewBox='0 0 ${width} 90'>
+    ${mark}
+    <text x='90' y='46' dominant-baseline='central' font-family='Arial, Helvetica, sans-serif' font-size='33' font-weight='800' fill='#FFFFFF'>${name}</text>
+  </svg>`;
+  return encode(svg);
+}
+
 /* ───────────────── Hero mesh-gradient background ───────────────── */
 export function heroBackground(): string {
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='900' viewBox='0 0 1600 900'>

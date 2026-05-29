@@ -120,3 +120,55 @@ export interface User {
   savedEvents: string[];
   tickets: Ticket[];
 }
+
+/* ───────────────── Sponsorship ───────────────── */
+
+export type SponsorTier = 'title' | 'platinum' | 'gold' | 'silver' | 'community';
+
+export const SPONSOR_TIER_LABELS: Record<SponsorTier, string> = {
+  title: 'Title Sponsor',
+  platinum: 'Platinum',
+  gold: 'Gold',
+  silver: 'Silver',
+  community: 'Community',
+};
+
+export interface SponsorshipPackage {
+  id: string;
+  tier: SponsorTier;
+  name: string;
+  tagline: string;
+  price: number;
+  currency: string;
+  slotsTotal: number;
+  slotsAvailable: number;
+  benefits: string[];
+  popular?: boolean;
+}
+
+export interface Sponsor {
+  id: string;
+  name: string;
+  industry: string;
+  tier: SponsorTier;
+  color: string;
+  logo: string;
+  /** Event sponsored, or undefined for platform-wide partners */
+  eventId?: string;
+}
+
+export interface SponsorshipApplication {
+  id: string;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  packageId: string;
+  packageName: string;
+  /** '' = platform-wide */
+  eventId: string;
+  budget: string;
+  message: string;
+  submittedAt: string;
+  status: 'pending' | 'reviewing' | 'approved';
+}

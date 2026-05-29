@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Checkout from './pages/Checkout';
+import Sponsorship from './pages/Sponsorship';
 import { useStore } from './store/useStore';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="events/:id" element={<EventDetail />} />
           <Route path="celebrities" element={<Celebrities />} />
           <Route path="celebrity/:id" element={<CelebrityProfile />} />
+          <Route path="sponsorship" element={<Sponsorship />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
