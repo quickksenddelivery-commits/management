@@ -3,9 +3,12 @@ import { useState } from 'react';
 import { Calendar, MapPin, Clock, Users, Heart, Share2, CheckCircle, ArrowLeft, Minus, Plus, Wallet } from 'lucide-react';
 import { getEvent, getCelebrity, getEventsByCelebrity, formatDate, formatTime, formatPrice } from '../data/mock';
 import { getEventSponsors } from '../data/sponsors';
+import { loadEvent, loadCelebrity, loadCelebrityEvents, loadSponsors, loadPendingSponsors } from '../lib/content';
+import { useApiData } from '../hooks/useApiData';
 import { withFallback, eventPoster, celebrityPortrait } from '../lib/images';
 import { useStore } from '../store/useStore';
 import type { TicketTier } from '../types';
+import type { PendingSponsor } from '../lib/api';
 import { TIER_COLORS, SPONSOR_TIER_LABELS } from '../types';
 import EventCard from '../components/common/EventCard';
 
@@ -20,11 +23,31 @@ const TIER_BG = {
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const event = getEvent(id ?? '');
-  const celebrity = event ? getCelebrity(event.celebrityId) : null;
   const { user, addToCart, toggleSaveEvent, sponsorshipApplications } = useStore();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [added, setAdded] = useState(false);
+
+  const event = useApiData(() => loadEvent(id ?? ''), getEvent(id ?? ''), [id]);
+  const celebrity = useApiData(
+    () => (event ? loadCelebrity(event.celebrityId) : Promise.resolve(undefined)),
+    event ? getCelebrity(event.celebrityId) : undefined,
+    [event?.celebrityId]
+  );
+  const moreEvents = useApiData(
+    () => (event ? loadCelebrityEvents(event.celebrityId) : Promise.resolve([])),
+    event ? getEventsByCelebrity(event.celebrityId) : [],
+    [event?.celebrityId]
+  );
+  const apiSponsors = useApiData(
+    () => (event ? loadSponsors({ eventId: event.id }) : Promise.resolve([])),
+    event ? getEventSponsors(event.id) : [],
+    [event?.id]
+  );
+  const apiPending = useApiData<PendingSponsor[]>(
+    () => (event ? loadPendingSponsors(event.id) : Promise.resolve([])),
+    [],
+    [event?.id]
+  );
 
   if (!event) {
     return (
@@ -37,9 +60,10 @@ export default function EventDetail() {
   }
 
   const isSaved = user?.savedEvents.includes(event.id) ?? false;
-  const moreByCeleb = getEventsByCelebrity(event.celebrityId).filter(e => e.id !== event.id).slice(0, 3);
-  const eventSponsors = getEventSponsors(event.id);
-  const pendingSponsors = sponsorshipApplications.filter(a => a.eventId === event.id);
+  const moreByCeleb = moreEvents.filter(e => e.id !== event.id).slice(0, 3);
+  const eventSponsors = apiSponsors;
+  const localPending = sponsorshipApplications.filter(a => a.eventId === event.id);
+  const pendingSponsors = [...apiPending, ...localPending];
 
   const setQty = (tierId: string, delta: number, max: number) => {
     setQuantities(prev => {

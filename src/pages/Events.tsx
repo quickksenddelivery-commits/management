@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
-import { events } from '../data/mock';
+import { events as mockEvents } from '../data/mock';
+import { loadEvents } from '../lib/content';
+import { useApiData } from '../hooks/useApiData';
 import type { CelebrityCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
 
@@ -11,14 +13,26 @@ const ALL_COUNTRIES = ['Nigeria', 'South Africa', 'Kenya', 'Ghana', 'United King
 const ALL_STATUSES = ['upcoming', 'live', 'sold_out'] as const;
 
 export default function Events() {
-  const [searchParams] = useSearchParams();
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (search) next.set('search', search);
+    else next.delete('search');
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
   const [category, setCategory] = useState<CelebrityCategory | ''>(
     (searchParams.get('category') as CelebrityCategory) || ''
   );
   const [country, setCountry] = useState('');
   const [status, setStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+
+  const events = useApiData(loadEvents, mockEvents);
 
   const filtered = useMemo(() => {
     return events.filter(e => {
@@ -29,7 +43,7 @@ export default function Events() {
       if (status && e.status !== status) return false;
       return true;
     });
-  }, [search, category, country, status]);
+  }, [events, search, category, country, status]);
 
   const hasFilters = category || country || status;
 

@@ -6,6 +6,8 @@ import {
   Wallet, Copy, Check, ShieldCheck, Globe, Zap, Lock,
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { api, getToken } from '../lib/api';
+import { useApiData } from '../hooks/useApiData';
 import { formatDate, formatPrice } from '../data/mock';
 import { COINS, cartUsdTotal, toCrypto, formatCrypto, formatUSD, WHY_CRYPTO } from '../lib/crypto';
 import type { Coin } from '../lib/crypto';
@@ -21,8 +23,13 @@ export default function Checkout() {
   const [email, setEmail] = useState(user?.email ?? '');
   const [coin, setCoin] = useState<Coin>(COINS[0]);
   const [copied, setCopied] = useState(false);
+  const [txHash, setTxHash] = useState('');
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>('cart');
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState(false);
+
+  const coins = useApiData<Coin[]>(() => api.payments.coins(), COINS);
 
   const usdTotal = cartUsdTotal(cart);
   const cryptoAmount = toCrypto(usdTotal, coin);
@@ -45,8 +52,43 @@ export default function Checkout() {
   const handlePay = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
-    purchaseTickets(name, email);
+    setPendingConfirm(false);
+
+    if (getToken()) {
+      // Live flow: create the order (reserves seats + returns crypto payment info),
+      // then confirm payment (issues one ticket per seat on the backend).
+      let createdOrderId: string | null = null;
+      try {
+        const { order } = await api.orders.create({
+          items: cart.map(i => ({ eventId: i.eventId, tierId: i.tierId, quantity: i.quantity })),
+          attendeeName: name,
+          attendeeEmail: email,
+          coin: coin.symbol,
+        });
+        createdOrderId = order._id;
+        setLastOrderId(createdOrderId);
+      } catch {
+        // Couldn't reach the backend to create the order — local demo fallback.
+        purchaseTickets(name, email);
+      }
+
+      if (createdOrderId) {
+        try {
+          await api.orders.confirm(createdOrderId, txHash.trim() || undefined);
+        } catch {
+          // The order is on the server but we couldn't confirm yet.
+          // We DON'T mint a local duplicate ticket — the order stays 'pending'
+          // and the user can retry from the Order Detail page.
+          setPendingConfirm(true);
+        }
+        clearCart();
+      }
+    } else {
+      // Offline / not signed in via API — local demo purchase.
+      await new Promise(r => setTimeout(r, 1200));
+      purchaseTickets(name, email);
+    }
+
     setLoading(false);
     setStep('success');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -54,21 +96,44 @@ export default function Checkout() {
 
   /* ── Success ── */
   if (step === 'success') {
+    const pending = pendingConfirm;
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4 pt-24 pb-16">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500/50 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={40} className="text-emerald-400" />
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 ${
+            pending ? 'bg-amber-500/20 border-amber-500/50' : 'bg-emerald-500/20 border-emerald-500/50'
+          }`}>
+            <CheckCircle size={40} className={pending ? 'text-amber-400' : 'text-emerald-400'} />
           </div>
-          <h1 className="text-3xl font-black text-white mb-3">Payment Confirmed!</h1>
-          <p className="text-[#A0A0C0] mb-2">
-            We've received your <span className="text-[#A78BFA] font-semibold">{coin.symbol}</span> payment on-chain.
-          </p>
-          <p className="text-[#A0A0C0] mb-8">
-            Your tickets are now in your wallet — show the QR code at the entrance.
-          </p>
+          <h1 className="text-3xl font-black text-white mb-3">
+            {pending ? 'Order Placed — Awaiting Confirmation' : 'Payment Confirmed!'}
+          </h1>
+          {pending ? (
+            <p className="text-[#A0A0C0] mb-8">
+              Your order is on the books. We'll release your tickets as soon as the
+              {' '}<span className="text-[#A78BFA] font-semibold">{coin.symbol}</span> payment lands on-chain.
+              You can paste the transaction hash to speed it up.
+            </p>
+          ) : (
+            <>
+              <p className="text-[#A0A0C0] mb-2">
+                We've received your <span className="text-[#A78BFA] font-semibold">{coin.symbol}</span> payment on-chain.
+              </p>
+              <p className="text-[#A0A0C0] mb-8">
+                Your tickets are now in your wallet — show the QR code at the entrance.
+              </p>
+            </>
+          )}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/dashboard" className="accent-btn px-6 py-3.5 rounded-xl text-white font-bold text-center">View My Tickets</Link>
+            {lastOrderId ? (
+              <Link to={`/orders/${lastOrderId}`} className="accent-btn px-6 py-3.5 rounded-xl text-white font-bold text-center">
+                View Order Details
+              </Link>
+            ) : (
+              <Link to="/dashboard" className="accent-btn px-6 py-3.5 rounded-xl text-white font-bold text-center">
+                View My Tickets
+              </Link>
+            )}
             <Link to="/events" className="px-6 py-3.5 rounded-xl bg-[#13132A] border border-[rgba(124,58,237,0.3)] text-[#A78BFA] font-bold text-center hover:bg-[rgba(124,58,237,0.1)] transition-all">
               Browse More Events
             </Link>
@@ -206,7 +271,7 @@ export default function Checkout() {
               <div>
                 <label className="block text-[#A0A0C0] text-sm font-medium mb-3">Choose your coin</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {COINS.map(c => {
+                  {coins.map(c => {
                     const active = c.symbol === coin.symbol;
                     return (
                       <button
@@ -273,6 +338,23 @@ export default function Checkout() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Optional transaction hash for faster reconciliation */}
+              <div>
+                <label className="block text-[#A0A0C0] text-sm font-medium mb-2">
+                  Transaction hash <span className="text-[#6060A0] font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={txHash}
+                  onChange={(e) => setTxHash(e.target.value)}
+                  placeholder="0x… or tx id from your wallet"
+                  className="w-full bg-[#1C1C3A] border border-[rgba(124,58,237,0.2)] rounded-xl px-4 py-3 text-white placeholder-[#6060A0] focus:outline-none focus:border-[#7C3AED] text-sm font-mono transition-colors"
+                />
+                <p className="text-[#6060A0] text-xs mt-1.5">
+                  Pasting the tx hash speeds up confirmation. If left blank, we'll detect the on-chain payment automatically.
+                </p>
               </div>
 
               {/* Why crypto */}

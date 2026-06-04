@@ -1,14 +1,30 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import CelebrityCard from '../components/common/CelebrityCard';
-import { celebrities } from '../data/mock';
+import { celebrities as mockCelebrities } from '../data/mock';
+import { loadCelebrities } from '../lib/content';
+import { useApiData } from '../hooks/useApiData';
 import type { CelebrityCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
 
 const ALL_CATS: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer'];
 
 export default function Celebrities() {
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [category, setCategory] = useState<CelebrityCategory | ''>('');
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (search) next.set('search', search);
+    else next.delete('search');
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const celebrities = useApiData(loadCelebrities, mockCelebrities);
 
   const filtered = useMemo(() =>
     celebrities.filter(c => {
@@ -16,7 +32,7 @@ export default function Celebrities() {
       if (category && c.category !== category) return false;
       return true;
     }),
-    [search, category]
+    [celebrities, search, category]
   );
 
   return (

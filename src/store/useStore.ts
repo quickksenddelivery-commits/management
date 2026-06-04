@@ -1,14 +1,34 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, CartItem, Ticket, SponsorshipApplication } from '../types';
+import { api, getToken, clearToken, ApiError } from '../lib/api';
+
+type AuthResult = { success: boolean; error?: string };
+
+/** Map a backend user document to the frontend User shape. */
+type ApiUser = {
+  id?: string; _id?: string; name: string; email: string; avatar?: string;
+  following?: string[]; savedEvents?: string[];
+};
+const mapUser = (u: ApiUser): User => ({
+  id: u.id || u._id || `user-${Date.now()}`,
+  name: u.name,
+  email: u.email,
+  avatar: u.avatar,
+  following: u.following ?? [],
+  savedEvents: u.savedEvents ?? [],
+  tickets: [],
+});
 
 interface AppStore {
   user: User | null;
   cart: CartItem[];
   sponsorshipApplications: SponsorshipApplication[];
-  login: (email: string, password: string) => { success: boolean; error?: string };
-  register: (name: string, email: string, password: string) => { success: boolean; error?: string };
+  initAuth: () => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (name: string, email: string, password: string) => Promise<AuthResult>;
   logout: () => void;
+  updateProfile: (updates: { name?: string; avatar?: string }) => Promise<void>;
   addToCart: (item: CartItem) => void;
   removeFromCart: (eventId: string, tierId: string) => void;
   updateQty: (eventId: string, tierId: string, qty: number) => void;
@@ -28,41 +48,75 @@ export const useStore = create<AppStore>()(
       cart: [],
       sponsorshipApplications: [],
 
-      login: (email, password) => {
+      // Re-hydrate the logged-in user from the backend if a token is present.
+      initAuth: async () => {
+        if (!getToken()) return;
+        try {
+          const u = await api.auth.me();
+          set({ user: mapUser(u as ApiUser) });
+        } catch {
+          /* offline or expired — keep any persisted user */
+        }
+      },
+
+      login: async (email, password) => {
         if (!email || !password) return { success: false, error: 'Please fill all fields' };
         if (password.length < 6) return { success: false, error: 'Password must be at least 6 characters' };
-        const existing = get().user;
-        if (existing) return { success: true };
-        set({
-          user: {
-            id: `user-${Date.now()}`,
-            name: email.split('@')[0].replace(/[._]/g, ' '),
-            email,
-            following: [],
-            savedEvents: [],
-            tickets: [],
-          },
-        });
-        return { success: true };
+        try {
+          const { user } = await api.auth.login(email, password);
+          set({ user: mapUser(user as ApiUser) });
+          return { success: true };
+        } catch (e) {
+          // Real auth error from the server — surface it.
+          if (e instanceof ApiError && e.status !== 0) {
+            return { success: false, error: e.message };
+          }
+          // Backend offline — fall back to the local demo session.
+          set({
+            user: {
+              id: `user-${Date.now()}`,
+              name: email.split('@')[0].replace(/[._]/g, ' '),
+              email, following: [], savedEvents: [], tickets: [],
+            },
+          });
+          return { success: true };
+        }
       },
 
-      register: (name, email, password) => {
+      register: async (name, email, password) => {
         if (!name || !email || !password) return { success: false, error: 'Please fill all fields' };
         if (password.length < 6) return { success: false, error: 'Password must be at least 6 characters' };
-        set({
-          user: {
-            id: `user-${Date.now()}`,
-            name,
-            email,
-            following: [],
-            savedEvents: [],
-            tickets: [],
-          },
-        });
-        return { success: true };
+        try {
+          const { user } = await api.auth.register(name, email, password);
+          set({ user: mapUser(user as ApiUser) });
+          return { success: true };
+        } catch (e) {
+          if (e instanceof ApiError && e.status !== 0) {
+            return { success: false, error: e.message };
+          }
+          set({
+            user: { id: `user-${Date.now()}`, name, email, following: [], savedEvents: [], tickets: [] },
+          });
+          return { success: true };
+        }
       },
 
-      logout: () => set({ user: null, cart: [] }),
+      logout: () => {
+        api.auth.logout().catch(() => {});
+        clearToken();
+        set({ user: null, cart: [] });
+      },
+
+      updateProfile: async (updates) => {
+        const { user } = get();
+        if (!user) return;
+        // Optimistic local update
+        set({ user: { ...user, ...updates } });
+        // Sync to backend when signed in via API
+        if (getToken()) {
+          try { await api.users.updateMe(updates); } catch { /* keep local update */ }
+        }
+      },
 
       addToCart: (item) => {
         const { cart } = get();
@@ -95,6 +149,9 @@ export const useStore = create<AppStore>()(
         if (!user) return;
         const saved = user.savedEvents.includes(eventId);
         set({ user: { ...user, savedEvents: saved ? user.savedEvents.filter(id => id !== eventId) : [...user.savedEvents, eventId] } });
+        if (getToken()) {
+          (saved ? api.users.unsaveEvent(eventId) : api.users.saveEvent(eventId)).catch(() => {});
+        }
       },
 
       toggleFollow: (celebId) => {
@@ -102,6 +159,9 @@ export const useStore = create<AppStore>()(
         if (!user) return;
         const following = user.following.includes(celebId);
         set({ user: { ...user, following: following ? user.following.filter(id => id !== celebId) : [...user.following, celebId] } });
+        if (getToken()) {
+          (following ? api.users.unfollow(celebId) : api.users.follow(celebId)).catch(() => {});
+        }
       },
 
       purchaseTickets: (attendeeName, attendeeEmail) => {

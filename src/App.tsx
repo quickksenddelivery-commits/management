@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
@@ -10,6 +11,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Checkout from './pages/Checkout';
 import Sponsorship from './pages/Sponsorship';
+import Profile from './pages/Profile';
+import OrderDetail from './pages/OrderDetail';
 import { useStore } from './store/useStore';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -19,6 +22,10 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    useStore.getState().initAuth();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -32,6 +39,8 @@ export default function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
+          <Route path="orders/:id" element={<RequireAuth><OrderDetail /></RequireAuth>} />
           <Route path="checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

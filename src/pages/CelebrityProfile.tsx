@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import { getCelebrity, getEventsByCelebrity, formatFollowers } from '../data/mock';
+import { loadCelebrity, loadCelebrityEvents } from '../lib/content';
+import { useApiData } from '../hooks/useApiData';
 import { withFallback, celebrityPortrait, celebrityCover } from '../lib/images';
 import { useStore } from '../store/useStore';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '../types';
@@ -8,9 +10,11 @@ import EventCard from '../components/common/EventCard';
 
 export default function CelebrityProfile() {
   const { id } = useParams<{ id: string }>();
-  const celebrity = getCelebrity(id ?? '');
   const { user, toggleFollow } = useStore();
   const isFollowing = user?.following.includes(id ?? '') ?? false;
+
+  const celebrity = useApiData(() => loadCelebrity(id ?? ''), getCelebrity(id ?? ''), [id]);
+  const celebEventsData = useApiData(() => loadCelebrityEvents(id ?? ''), getEventsByCelebrity(id ?? ''), [id]);
 
   if (!celebrity) {
     return (
@@ -22,7 +26,7 @@ export default function CelebrityProfile() {
     );
   }
 
-  const celebEvents = getEventsByCelebrity(celebrity.id);
+  const celebEvents = celebEventsData;
   const upcomingEvents = celebEvents.filter(e => e.status === 'upcoming');
   const pastEvents = celebEvents.filter(e => e.status === 'past' || e.status === 'sold_out');
 

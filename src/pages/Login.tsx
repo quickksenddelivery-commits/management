@@ -20,8 +20,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    const result = login(email, password);
+    const result = await login(email, password);
     setLoading(false);
     if (result.success) {
       navigate(from, { replace: true });
@@ -69,7 +68,16 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-[#A0A0C0] text-sm font-medium mb-2">Password</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[#A0A0C0] text-sm font-medium">Password</label>
+                <button
+                  type="button"
+                  onClick={() => alert('Password reset is coming in Stage 2. For now, contact support to reset your password.')}
+                  className="text-[#A78BFA] hover:text-white text-xs font-semibold transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}

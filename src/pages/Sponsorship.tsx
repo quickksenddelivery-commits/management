@@ -5,8 +5,11 @@ import {
   Crown, Check, Users, Globe, TrendingUp, Sparkles, Handshake,
   ArrowRight, CheckCircle, Building2, Star, Calendar, MapPin, Wallet,
 } from 'lucide-react';
-import { sponsorshipPackages, sponsors, getPackage, getEventSponsors } from '../data/sponsors';
-import { events, getEvent, formatPrice, formatDate } from '../data/mock';
+import { sponsorshipPackages as mockPackages, sponsors as mockSponsors, getEventSponsors as mockEventSponsors } from '../data/sponsors';
+import { events as mockEvents, getEvent, formatPrice, formatDate } from '../data/mock';
+import { loadEvents, loadPackages, loadSponsors, loadEvent } from '../lib/content';
+import { useApiData } from '../hooks/useApiData';
+import { api } from '../lib/api';
 import { useStore } from '../store/useStore';
 import { SPONSOR_TIER_LABELS } from '../types';
 import type { SponsorTier } from '../types';
@@ -30,17 +33,35 @@ const REACH_STATS = [
 ];
 
 export default function Sponsorship() {
-  const { submitSponsorship } = useStore();
+  const { submitSponsorship, user } = useStore();
   const formRef = useRef<HTMLDivElement>(null);
   const [params] = useSearchParams();
   const targetEventId = params.get('event') ?? '';
-  const targetEvent = targetEventId ? getEvent(targetEventId) : undefined;
+
+  const packages = useApiData(loadPackages, mockPackages);
+  const partners = useApiData(() => loadSponsors(), mockSponsors);
+  const allEvents = useApiData(loadEvents, mockEvents);
+  const targetEvent = useApiData(
+    () => (targetEventId ? loadEvent(targetEventId) : Promise.resolve(undefined)),
+    targetEventId ? getEvent(targetEventId) : undefined,
+    [targetEventId]
+  );
+  const targetEventSponsors = useApiData(
+    () => (targetEventId ? loadSponsors({ eventId: targetEventId }) : Promise.resolve([])),
+    targetEventId ? mockEventSponsors(targetEventId) : [],
+    [targetEventId]
+  );
+  const findPkg = (pid: string) => packages.find(p => p.id === pid);
 
   const [form, setForm] = useState({
-    companyName: '', contactName: '', email: '', phone: '',
+    companyName: '',
+    contactName: user?.name ?? '',
+    email: user?.email ?? '',
+    phone: '',
     packageId: params.get('package') ?? '',
-    eventId: targetEvent ? targetEventId : '',
-    budget: '', message: '',
+    eventId: targetEventId,
+    budget: '',
+    message: '',
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -62,27 +83,40 @@ export default function Sponsorship() {
       return;
     }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    submitSponsorship({
-      companyName: form.companyName,
-      contactName: form.contactName,
-      email: form.email,
-      phone: form.phone,
-      packageId: form.packageId,
-      packageName: getPackage(form.packageId)?.name ?? '',
-      eventId: form.eventId,
-      budget: form.budget,
-      message: form.message,
-    });
+    try {
+      await api.sponsorship.apply({
+        companyName: form.companyName,
+        contactName: form.contactName,
+        email: form.email,
+        phone: form.phone,
+        packageId: form.packageId,
+        eventId: form.eventId || undefined,
+        budget: form.budget,
+        message: form.message,
+      });
+    } catch {
+      // Backend offline — record locally so it still shows as a pending sponsor.
+      submitSponsorship({
+        companyName: form.companyName,
+        contactName: form.contactName,
+        email: form.email,
+        phone: form.phone,
+        packageId: form.packageId,
+        packageName: findPkg(form.packageId)?.name ?? '',
+        eventId: form.eventId,
+        budget: form.budget,
+        message: form.message,
+      });
+    }
     setLoading(false);
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const sponsorableEvents = events.filter(e => e.status === 'upcoming');
+  const sponsorableEvents = allEvents.filter(e => e.status === 'upcoming');
 
   if (submitted) {
-    const pkg = getPackage(form.packageId);
+    const pkg = findPkg(form.packageId);
     return (
       <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
         <div className="max-w-lg w-full text-center">
@@ -104,7 +138,7 @@ export default function Sponsorship() {
             <div className="flex justify-between py-1.5 text-sm border-t border-[rgba(124,58,237,0.12)]">
               <span className="text-[#6060A0]">Scope</span>
               <span className="text-white font-semibold">
-                {form.eventId ? events.find(e => e.id === form.eventId)?.title : 'Platform-wide'}
+                {form.eventId ? allEvents.find(e => e.id === form.eventId)?.title : 'Platform-wide'}
               </span>
             </div>
             <div className="flex justify-between py-1.5 text-sm border-t border-[rgba(124,58,237,0.12)]">
@@ -190,10 +224,10 @@ export default function Sponsorship() {
                   <span className="flex items-center gap-1"><MapPin size={12} className="text-[#7C3AED]" /> {targetEvent.venue}, {targetEvent.city}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-3 justify-center sm:justify-start">
-                  {getEventSponsors(targetEvent.id).length > 0 ? (
+                  {targetEventSponsors.length > 0 ? (
                     <>
                       <span className="text-[#6060A0] text-[11px]">Current sponsors:</span>
-                      {getEventSponsors(targetEvent.id).map(s => (
+                      {targetEventSponsors.map(s => (
                         <img key={s.id} src={s.logo} alt={s.name} className="h-4 object-contain opacity-70" />
                       ))}
                     </>
@@ -244,7 +278,7 @@ export default function Sponsorship() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sponsorshipPackages.map(pkg => {
+            {packages.map(pkg => {
               const t = TIER_THEME[pkg.tier];
               const soldOut = pkg.slotsAvailable === 0;
               return (
@@ -386,7 +420,7 @@ export default function Sponsorship() {
               <Field label="Package *">
                 <select value={form.packageId} onChange={set('packageId')} className={inputCls}>
                   <option value="">Select a package</option>
-                  {sponsorshipPackages.map(p => (
+                  {packages.map(p => (
                     <option key={p.id} value={p.id} disabled={p.slotsAvailable === 0}>
                       {p.name} — {formatPrice(p.price, p.currency)}{p.slotsAvailable === 0 ? ' (booked)' : ''}
                     </option>
@@ -435,7 +469,7 @@ export default function Sponsorship() {
           </div>
           <h2 className="text-center text-3xl font-black text-white mb-12">Our Partners & Sponsors</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {sponsors.map(s => (
+            {partners.map(s => (
               <div key={s.id} className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-[rgba(124,58,237,0.35)] transition-all group">
                 <img src={s.logo} alt={s.name} className="h-7 object-contain opacity-75 group-hover:opacity-100 transition-opacity" />
                 <div className="text-center">

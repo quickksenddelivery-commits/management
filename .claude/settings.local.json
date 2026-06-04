@@ -1,15 +1,39 @@
 {
   "permissions": {
     "allow": [
-      "Bash(yarn build *)",
-      "Bash(node -e \"const icons = require\\('/Users/temple/Documents/Rachead/management/node_modules/lucide-react'\\); console.log\\(Object.keys\\(icons\\).filter\\(k => ['Instagram','Twitter','Youtube','Globe','Music','Radio'].includes\\(k\\)\\)\\)\")",
-      "Bash(pkill -f \"vite\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/)",
-      "Bash(curl -sI --max-time 8 \"https://picsum.photos/seed/rachead/200/200\")",
-      "Bash(curl -sI --max-time 8 \"https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200\")",
-      "Bash(pkill -9 -f \"vite\")",
-      "Bash(node -e \"const i=require\\('/Users/temple/Documents/Rachead/management/node_modules/lucide-react'\\); const need=['Crown','Check','Users','Globe','TrendingUp','Sparkles','Handshake','ArrowRight','CheckCircle','Building2','Star']; need.forEach\\(n=>console.log\\(n, n in i ? 'ok':'MISSING'\\)\\)\")",
-      "Bash(grep -n \"const { user, addToCart, toggleSaveEvent } = useStore\" /Users/temple/Documents/Rachead/management/src/pages/EventDetail.tsx)"
+      "Read(//Users/temple/Documents/Rachead/**)",
+      "Read(//Users/temple/Documents/Rachead/management-backend/**)",
+      "Write(//Users/temple/Documents/Rachead/**)",
+      "Edit(//Users/temple/Documents/Rachead/**)",
+      "Glob(//Users/temple/Documents/Rachead/**)",
+      "Grep(**/*)",
+      "Bash(yarn *)",
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(pnpm *)",
+      "Bash(npx *)",
+      "Bash(curl *)",
+      "Bash(pkill *)",
+      "Bash(git *)",
+      "Bash(ls *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(mkdir *)",
+      "Bash(rm *)",
+      "Bash(cat *)",
+      "Bash(echo *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(tsc *)",
+      "Bash(vite *)",
+      "Bash(docker *)",
+      "Task(**)",
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)"
     ]
   }
 }

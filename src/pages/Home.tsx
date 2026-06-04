@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronRight, Crown, Star, Zap, Shield } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
 import CelebrityCard from '../components/common/CelebrityCard';
-import { celebrities, events, getFeaturedEvents, getUpcomingEvents, formatPrice } from '../data/mock';
-import { sponsors } from '../data/sponsors';
+import { celebrities as mockCelebrities, events as mockEvents, formatPrice } from '../data/mock';
+import { sponsors as mockSponsors } from '../data/sponsors';
+import { loadEvents, loadCelebrities, loadSponsors } from '../lib/content';
+import { useApiData } from '../hooks/useApiData';
 import { heroBackground, withFallback, celebrityPortrait, celebrityCover, eventPoster } from '../lib/images';
 import type { CelebrityCategory } from '../types';
 
@@ -56,9 +58,9 @@ const STATS = [
 ];
 
 const CATEGORIES: { label: string; cat: CelebrityCategory; emoji: string; count: number }[] = [
-  { label: 'Musicians', cat: 'musician', emoji: '🎤', count: events.filter(e => e.category === 'musician').length },
-  { label: 'DJs', cat: 'dj', emoji: '🎧', count: events.filter(e => e.category === 'dj').length },
-  { label: 'Comedians', cat: 'comedian', emoji: '😂', count: events.filter(e => e.category === 'comedian').length },
+  { label: 'Musicians', cat: 'musician', emoji: '🎤', count: mockEvents.filter(e => e.category === 'musician').length },
+  { label: 'DJs', cat: 'dj', emoji: '🎧', count: mockEvents.filter(e => e.category === 'dj').length },
+  { label: 'Comedians', cat: 'comedian', emoji: '😂', count: mockEvents.filter(e => e.category === 'comedian').length },
   { label: 'Actors', cat: 'actor', emoji: '🎬', count: 0 },
   { label: 'Athletes', cat: 'athlete', emoji: '🏆', count: 0 },
   { label: 'Influencers', cat: 'influencer', emoji: '📱', count: 0 },
@@ -97,11 +99,15 @@ function Particle({ style }: { style: React.CSSProperties }) {
 export default function Home() {
   useScrollReveal();
 
-  const featured = getFeaturedEvents();
-  const upcoming = getUpcomingEvents().filter(e => !e.isFeatured).slice(0, 6);
-  const spotlight = celebrities[0];
-  const spotlightEvents = events.filter(e => e.celebrityId === spotlight.id).slice(0, 2);
-  const vipEvent = events.find(e => e.ticketTiers.some(t => t.tier === 'meetgreet'));
+  const allEvents = useApiData(loadEvents, mockEvents);
+  const allCelebs = useApiData(loadCelebrities, mockCelebrities);
+  const allSponsors = useApiData(() => loadSponsors(), mockSponsors);
+
+  const featured = allEvents.filter(e => e.isFeatured);
+  const upcoming = allEvents.filter(e => e.status === 'upcoming' && !e.isFeatured).slice(0, 6);
+  const spotlight = allCelebs[0] ?? mockCelebrities[0];
+  const spotlightEvents = allEvents.filter(e => e.celebrityId === spotlight.id).slice(0, 2);
+  const vipEvent = allEvents.find(e => e.ticketTiers?.some(t => t.tier === 'meetgreet'));
   const vipTier = vipEvent?.ticketTiers.find(t => t.tier === 'meetgreet');
 
   return (
@@ -424,7 +430,7 @@ export default function Home() {
                   <h3 className="text-3xl font-black text-white mb-3">
                     Meet & Greet with{' '}
                     <span className="gradient-text-gold">
-                      {celebrities.find(c => c.id === vipEvent.celebrityId)?.name}
+                      {allCelebs.find(c => c.id === vipEvent.celebrityId)?.name}
                     </span>
                   </h3>
                   <p className="text-[#A0A0C0] mb-6 leading-relaxed">
@@ -481,7 +487,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {celebrities.map(celeb => (
+            {allCelebs.map(celeb => (
               <CelebrityCard key={celeb.id} celebrity={celeb} />
             ))}
           </div>
@@ -550,7 +556,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            {sponsors.map(s => (
+            {allSponsors.map(s => (
               <div key={s.id} className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl px-4 py-7 flex items-center justify-center hover:border-[rgba(124,58,237,0.35)] transition-all group">
                 <img src={s.logo} alt={s.name} className="h-7 object-contain opacity-65 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -593,7 +599,7 @@ export default function Home() {
                 </Link>
                 <div className="flex items-center gap-3 text-[#A0A0C0] text-sm">
                   <div className="flex -space-x-2">
-                    {celebrities.slice(0, 4).map((c, i) => (
+                    {allCelebs.slice(0, 4).map((c, i) => (
                       <img
                         key={i}
                         src={c.image}

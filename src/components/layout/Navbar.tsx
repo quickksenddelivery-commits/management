@@ -6,11 +6,21 @@ import { useStore, useCartCount } from '../../store/useStore';
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useStore();
   const cartCount = useCartCount();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    navigate(`/events?search=${encodeURIComponent(q)}`);
+    setSearchOpen(false);
+    setSearchQuery('');
+  };
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 30);
@@ -137,14 +147,16 @@ export default function Navbar() {
 
         {/* Search bar */}
         {searchOpen && (
-          <div className="pb-3 animate-fade-in">
+          <form onSubmit={handleSearch} className="pb-3 animate-fade-in">
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search events, celebrities, cities..."
               className="w-full bg-[#13132A] border border-[rgba(124,58,237,0.35)] rounded-xl px-4 py-3 text-white placeholder-[#6060A0] focus:outline-none focus:border-[#7C3AED] text-sm transition-colors"
               autoFocus
             />
-          </div>
+          </form>
         )}
 
         {/* Mobile menu */}
