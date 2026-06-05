@@ -6,7 +6,7 @@ import type { SponsorshipApplication } from '../types';
 import { useStore } from '../store/useStore';
 import { api } from '../lib/api';
 import { useApiData } from '../hooks/useApiData';
-import { formatDate, formatPrice } from '../data/mock';
+import { formatDate, formatPrice } from '../lib/format';
 import { loadSavedEvents, loadFollowing } from '../lib/content';
 import { withFallback, celebrityPortrait } from '../lib/images';
 import type { Ticket as TicketType, Event as EventType, Celebrity as CelebrityType } from '../types';
@@ -92,12 +92,12 @@ export default function Dashboard() {
     () => api.sponsorship.myApplications(),
     localApplications.filter(a => a.email?.toLowerCase() === user?.email.toLowerCase())
   );
-  // Saved events & followed celebrities (API first, resolved from catalog when offline).
+  // Saved events & followed celebrities — backend is the source of truth.
   const savedEventList = useApiData<EventType[]>(
-    () => loadSavedEvents(user?.savedEvents ?? []), [], [(user?.savedEvents ?? []).join(',')]
+    loadSavedEvents, [], [(user?.savedEvents ?? []).join(',')]
   );
   const followingCelebs = useApiData<CelebrityType[]>(
-    () => loadFollowing(user?.following ?? []), [], [(user?.following ?? []).join(',')]
+    loadFollowing, [], [(user?.following ?? []).join(',')]
   );
 
   if (!user) {

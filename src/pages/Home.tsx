@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronRight, Crown, Star, Zap, Shield } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
 import CelebrityCard from '../components/common/CelebrityCard';
-import { celebrities as mockCelebrities, events as mockEvents, formatPrice } from '../data/mock';
-import { sponsors as mockSponsors } from '../data/sponsors';
+import { formatPrice } from '../lib/format';
 import { loadEvents, loadCelebrities, loadSponsors } from '../lib/content';
 import { useApiData } from '../hooks/useApiData';
 import { heroBackground, withFallback, celebrityPortrait, celebrityCover, eventPoster } from '../lib/images';
-import type { CelebrityCategory } from '../types';
+import type { CelebrityCategory, Event as EventType, Celebrity as CelebrityType, Sponsor } from '../types';
 
 const HERO_BG = heroBackground();
 
@@ -57,13 +56,13 @@ const STATS = [
   { value: 1000000, label: 'Fans Served', suffix: '' },
 ];
 
-const CATEGORIES: { label: string; cat: CelebrityCategory; emoji: string; count: number }[] = [
-  { label: 'Musicians', cat: 'musician', emoji: '🎤', count: mockEvents.filter(e => e.category === 'musician').length },
-  { label: 'DJs', cat: 'dj', emoji: '🎧', count: mockEvents.filter(e => e.category === 'dj').length },
-  { label: 'Comedians', cat: 'comedian', emoji: '😂', count: mockEvents.filter(e => e.category === 'comedian').length },
-  { label: 'Actors', cat: 'actor', emoji: '🎬', count: 0 },
-  { label: 'Athletes', cat: 'athlete', emoji: '🏆', count: 0 },
-  { label: 'Influencers', cat: 'influencer', emoji: '📱', count: 0 },
+const CATEGORIES: { label: string; cat: CelebrityCategory; emoji: string }[] = [
+  { label: 'Musicians',   cat: 'musician',   emoji: '🎤' },
+  { label: 'DJs',         cat: 'dj',         emoji: '🎧' },
+  { label: 'Comedians',   cat: 'comedian',   emoji: '😂' },
+  { label: 'Actors',      cat: 'actor',      emoji: '🎬' },
+  { label: 'Athletes',    cat: 'athlete',    emoji: '🏆' },
+  { label: 'Influencers', cat: 'influencer', emoji: '📱' },
 ];
 
 const TICKER_ITEMS = [
@@ -99,14 +98,14 @@ function Particle({ style }: { style: React.CSSProperties }) {
 export default function Home() {
   useScrollReveal();
 
-  const allEvents = useApiData(loadEvents, mockEvents);
-  const allCelebs = useApiData(loadCelebrities, mockCelebrities);
-  const allSponsors = useApiData(() => loadSponsors(), mockSponsors);
+  const allEvents = useApiData<EventType[]>(loadEvents, []);
+  const allCelebs = useApiData<CelebrityType[]>(loadCelebrities, []);
+  const allSponsors = useApiData<Sponsor[]>(() => loadSponsors(), []);
 
   const featured = allEvents.filter(e => e.isFeatured);
   const upcoming = allEvents.filter(e => e.status === 'upcoming' && !e.isFeatured).slice(0, 6);
-  const spotlight = allCelebs[0] ?? mockCelebrities[0];
-  const spotlightEvents = allEvents.filter(e => e.celebrityId === spotlight.id).slice(0, 2);
+  const spotlight = allCelebs[0];
+  const spotlightEvents = spotlight ? allEvents.filter(e => e.celebrityId === spotlight.id).slice(0, 2) : [];
   const vipEvent = allEvents.find(e => e.ticketTiers?.some(t => t.tier === 'meetgreet'));
   const vipTier = vipEvent?.ticketTiers.find(t => t.tier === 'meetgreet');
 
@@ -302,6 +301,7 @@ export default function Home() {
             Artist <span className="gradient-text">Spotlight</span>
           </h2>
 
+          {spotlight && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Image side */}
             <div className="relative">
@@ -381,6 +381,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
+          )}
         </div>
       </section>
 
@@ -504,17 +505,20 @@ export default function Home() {
             </h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {CATEGORIES.map(({ label, cat, emoji, count }) => (
-              <Link
-                key={cat}
-                to={`/events?category=${cat}`}
-                className="group glow-card bg-[#13132A] rounded-2xl p-6 text-center"
-              >
-                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{emoji}</div>
-                <p className="text-white text-sm font-bold group-hover:text-[#A78BFA] transition-colors">{label}</p>
-                <p className="text-[#6060A0] text-xs mt-1">{count > 0 ? `${count} events` : 'Coming soon'}</p>
-              </Link>
-            ))}
+            {CATEGORIES.map(({ label, cat, emoji }) => {
+              const count = allEvents.filter(e => e.category === cat).length;
+              return (
+                <Link
+                  key={cat}
+                  to={`/events?category=${cat}`}
+                  className="group glow-card bg-[#13132A] rounded-2xl p-6 text-center"
+                >
+                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{emoji}</div>
+                  <p className="text-white text-sm font-bold group-hover:text-[#A78BFA] transition-colors">{label}</p>
+                  <p className="text-[#6060A0] text-xs mt-1">{count > 0 ? `${count} events` : 'Coming soon'}</p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -117,12 +117,6 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Demo hint */}
-          <div className="mt-4 px-4 py-3 rounded-xl bg-[rgba(124,58,237,0.08)] border border-[rgba(124,58,237,0.15)] text-center">
-            <p className="text-[#6060A0] text-xs">
-              Demo mode: any email + 6+ char password works
-            </p>
-          </div>
         </div>
       </div>
     </div>

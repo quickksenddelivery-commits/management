@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import type { Celebrity } from '../../types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '../../types';
-import { formatFollowers } from '../../data/mock';
+import { formatFollowers } from '../../lib/format';
 import { withFallback, celebrityPortrait } from '../../lib/images';
 import { useStore } from '../../store/useStore';
 

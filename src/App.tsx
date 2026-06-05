@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import AppLoader from './components/AppLoader';
 import Home from './pages/Home';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
@@ -30,11 +31,20 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
+    // Kick off backend session hydration immediately so it's done by the time
+    // the 5s splash finishes — the main app drops in already authenticated.
     useStore.getState().initAuth();
+    const t = setTimeout(() => setReady(true), 5000);
+    return () => clearTimeout(t);
   }, []);
 
+  if (!ready) return <AppLoader />;
+
   return (
+    <div className="app-reveal">
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -55,5 +65,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </div>
   );
 }

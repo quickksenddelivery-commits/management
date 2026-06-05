@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Save, XCircle, Loader, AlertCircle, Calendar } fr
 import { api, ApiError } from '../../lib/api';
 import { loadCelebrities } from '../../lib/content';
 import type { Event, Celebrity, CelebrityCategory } from '../../types';
-import { formatDate } from '../../data/mock';
+import { formatDate } from '../../lib/format';
 
 const CATEGORIES: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer', 'pastor', 'politician'];
 const STATUSES = ['upcoming', 'live', 'past', 'sold_out'] as const;

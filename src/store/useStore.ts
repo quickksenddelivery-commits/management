@@ -69,19 +69,11 @@ export const useStore = create<AppStore>()(
           set({ user: mapUser(user as ApiUser) });
           return { success: true };
         } catch (e) {
-          // Real auth error from the server — surface it.
-          if (e instanceof ApiError && e.status !== 0) {
+          if (e instanceof ApiError) {
+            if (e.status === 0) return { success: false, error: 'Backend unreachable — please try again.' };
             return { success: false, error: e.message };
           }
-          // Backend offline — fall back to the local demo session.
-          set({
-            user: {
-              id: `user-${Date.now()}`,
-              name: email.split('@')[0].replace(/[._]/g, ' '),
-              email, following: [], savedEvents: [], tickets: [],
-            },
-          });
-          return { success: true };
+          return { success: false, error: 'Login failed. Please try again.' };
         }
       },
 
@@ -93,13 +85,11 @@ export const useStore = create<AppStore>()(
           set({ user: mapUser(user as ApiUser) });
           return { success: true };
         } catch (e) {
-          if (e instanceof ApiError && e.status !== 0) {
+          if (e instanceof ApiError) {
+            if (e.status === 0) return { success: false, error: 'Backend unreachable — please try again.' };
             return { success: false, error: e.message };
           }
-          set({
-            user: { id: `user-${Date.now()}`, name, email, following: [], savedEvents: [], tickets: [] },
-          });
-          return { success: true };
+          return { success: false, error: 'Registration failed. Please try again.' };
         }
       },
 

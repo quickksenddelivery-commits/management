@@ -2,8 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
-import { events as mockEvents } from '../data/mock';
 import { loadEvents } from '../lib/content';
+import type { Event } from '../types';
 import { useApiData } from '../hooks/useApiData';
 import type { CelebrityCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
@@ -32,7 +32,7 @@ export default function Events() {
   const [status, setStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  const events = useApiData(loadEvents, mockEvents);
+  const events = useApiData<Event[]>(loadEvents, []);
 
   const filtered = useMemo(() => {
     return events.filter(e => {

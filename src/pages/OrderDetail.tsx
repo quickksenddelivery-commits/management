@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { api, ApiError } from '../lib/api';
 import type { Order } from '../lib/api';
-import { formatDate, formatPrice } from '../data/mock';
+import { formatDate, formatPrice } from '../lib/format';
 
 const STATUS_STYLES: Record<string, string> = {
   pending:   'bg-amber-500/15 text-amber-300 border-amber-500/30',

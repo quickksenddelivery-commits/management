@@ -1,11 +1,13 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
-import { getCelebrity, getEventsByCelebrity, formatFollowers } from '../data/mock';
+import { CheckCircle, ArrowLeft, Loader } from 'lucide-react';
+import { formatFollowers } from '../lib/format';
 import { loadCelebrity, loadCelebrityEvents } from '../lib/content';
 import { useApiData } from '../hooks/useApiData';
 import { withFallback, celebrityPortrait, celebrityCover } from '../lib/images';
 import { useStore } from '../store/useStore';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '../types';
+import type { Celebrity, Event } from '../types';
 import EventCard from '../components/common/EventCard';
 
 export default function CelebrityProfile() {
@@ -13,8 +15,29 @@ export default function CelebrityProfile() {
   const { user, toggleFollow } = useStore();
   const isFollowing = user?.following.includes(id ?? '') ?? false;
 
-  const celebrity = useApiData(() => loadCelebrity(id ?? ''), getCelebrity(id ?? ''), [id]);
-  const celebEventsData = useApiData(() => loadCelebrityEvents(id ?? ''), getEventsByCelebrity(id ?? ''), [id]);
+  const [celebrity, setCelebrity] = useState<Celebrity | undefined>(undefined);
+  const [celebLoaded, setCelebLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!id) { setCelebLoaded(true); return; }
+    let alive = true;
+    setCelebLoaded(false);
+    loadCelebrity(id)
+      .then((c) => { if (alive) { setCelebrity(c); setCelebLoaded(true); } })
+      .catch(() => { if (alive) setCelebLoaded(true); });
+    return () => { alive = false; };
+  }, [id]);
+
+  const celebEventsData = useApiData<Event[]>(() => loadCelebrityEvents(id ?? ''), [], [id]);
+
+  if (!celebLoaded) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 pt-24">
+        <Loader size={32} className="text-[#A78BFA] animate-spin mb-4" />
+        <p className="text-[#A0A0C0]">Loading profile…</p>
+      </div>
+    );
+  }
 
   if (!celebrity) {
     return (

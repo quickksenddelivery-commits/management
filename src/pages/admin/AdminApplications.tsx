@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Loader, AlertCircle, Mail, Phone, Building2, Calendar } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
 import type { SponsorshipApplication } from '../../types';
-import { formatDate } from '../../data/mock';
+import { formatDate } from '../../lib/format';
 
 const STATUSES = ['pending', 'reviewing', 'approved'] as const;
 type Status = typeof STATUSES[number];

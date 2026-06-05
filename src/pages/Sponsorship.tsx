@@ -5,14 +5,13 @@ import {
   Crown, Check, Users, Globe, TrendingUp, Sparkles, Handshake,
   ArrowRight, CheckCircle, Building2, Star, Calendar, MapPin, Wallet,
 } from 'lucide-react';
-import { sponsorshipPackages as mockPackages, sponsors as mockSponsors, getEventSponsors as mockEventSponsors } from '../data/sponsors';
-import { events as mockEvents, getEvent, formatPrice, formatDate } from '../data/mock';
+import { formatPrice, formatDate } from '../lib/format';
 import { loadEvents, loadPackages, loadSponsors, loadEvent } from '../lib/content';
 import { useApiData } from '../hooks/useApiData';
 import { api } from '../lib/api';
 import { useStore } from '../store/useStore';
 import { SPONSOR_TIER_LABELS } from '../types';
-import type { SponsorTier } from '../types';
+import type { SponsorTier, SponsorshipPackage, Sponsor, Event as EventType } from '../types';
 import { heroBackground, withFallback, eventPoster } from '../lib/images';
 
 const HERO_BG = heroBackground();
@@ -38,17 +37,17 @@ export default function Sponsorship() {
   const [params] = useSearchParams();
   const targetEventId = params.get('event') ?? '';
 
-  const packages = useApiData(loadPackages, mockPackages);
-  const partners = useApiData(() => loadSponsors(), mockSponsors);
-  const allEvents = useApiData(loadEvents, mockEvents);
-  const targetEvent = useApiData(
+  const packages = useApiData<SponsorshipPackage[]>(loadPackages, []);
+  const partners = useApiData<Sponsor[]>(() => loadSponsors(), []);
+  const allEvents = useApiData<EventType[]>(loadEvents, []);
+  const targetEvent = useApiData<EventType | undefined>(
     () => (targetEventId ? loadEvent(targetEventId) : Promise.resolve(undefined)),
-    targetEventId ? getEvent(targetEventId) : undefined,
+    undefined,
     [targetEventId]
   );
-  const targetEventSponsors = useApiData(
+  const targetEventSponsors = useApiData<Sponsor[]>(
     () => (targetEventId ? loadSponsors({ eventId: targetEventId }) : Promise.resolve([])),
-    targetEventId ? mockEventSponsors(targetEventId) : [],
+    [],
     [targetEventId]
   );
   const findPkg = (pid: string) => packages.find(p => p.id === pid);

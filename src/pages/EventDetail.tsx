@@ -1,13 +1,12 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { Calendar, MapPin, Clock, Users, Heart, Share2, CheckCircle, ArrowLeft, Minus, Plus, Wallet } from 'lucide-react';
-import { getEvent, getCelebrity, getEventsByCelebrity, formatDate, formatTime, formatPrice } from '../data/mock';
-import { getEventSponsors } from '../data/sponsors';
+import { useState, useEffect } from 'react';
+import { Calendar, MapPin, Clock, Users, Heart, Share2, CheckCircle, ArrowLeft, Minus, Plus, Wallet, Loader } from 'lucide-react';
+import { formatDate, formatTime, formatPrice } from '../lib/format';
 import { loadEvent, loadCelebrity, loadCelebrityEvents, loadSponsors, loadPendingSponsors } from '../lib/content';
 import { useApiData } from '../hooks/useApiData';
 import { withFallback, eventPoster, celebrityPortrait } from '../lib/images';
 import { useStore } from '../store/useStore';
-import type { TicketTier } from '../types';
+import type { TicketTier, Event as EventType, Celebrity as CelebrityType, Sponsor } from '../types';
 import type { PendingSponsor } from '../lib/api';
 import { TIER_COLORS, SPONSOR_TIER_LABELS } from '../types';
 import EventCard from '../components/common/EventCard';
@@ -27,20 +26,31 @@ export default function EventDetail() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [added, setAdded] = useState(false);
 
-  const event = useApiData(() => loadEvent(id ?? ''), getEvent(id ?? ''), [id]);
-  const celebrity = useApiData(
+  const [event, setEvent] = useState<EventType | undefined>(undefined);
+  const [eventLoaded, setEventLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!id) { setEventLoaded(true); return; }
+    let alive = true;
+    setEventLoaded(false);
+    loadEvent(id)
+      .then((e) => { if (alive) { setEvent(e); setEventLoaded(true); } })
+      .catch(() => { if (alive) setEventLoaded(true); });
+    return () => { alive = false; };
+  }, [id]);
+  const celebrity = useApiData<CelebrityType | undefined>(
     () => (event ? loadCelebrity(event.celebrityId) : Promise.resolve(undefined)),
-    event ? getCelebrity(event.celebrityId) : undefined,
+    undefined,
     [event?.celebrityId]
   );
-  const moreEvents = useApiData(
+  const moreEvents = useApiData<EventType[]>(
     () => (event ? loadCelebrityEvents(event.celebrityId) : Promise.resolve([])),
-    event ? getEventsByCelebrity(event.celebrityId) : [],
+    [],
     [event?.celebrityId]
   );
-  const apiSponsors = useApiData(
+  const apiSponsors = useApiData<Sponsor[]>(
     () => (event ? loadSponsors({ eventId: event.id }) : Promise.resolve([])),
-    event ? getEventSponsors(event.id) : [],
+    [],
     [event?.id]
   );
   const apiPending = useApiData<PendingSponsor[]>(
@@ -48,6 +58,15 @@ export default function EventDetail() {
     [],
     [event?.id]
   );
+
+  if (!eventLoaded) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 pt-24">
+        <Loader size={32} className="text-[#A78BFA] animate-spin mb-4" />
+        <p className="text-[#A0A0C0]">Loading event…</p>
+      </div>
+    );
+  }
 
   if (!event) {
     return (

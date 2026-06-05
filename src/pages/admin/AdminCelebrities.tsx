@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Save, XCircle, Loader, AlertCircle, Users, CheckC
 import { api, ApiError } from '../../lib/api';
 import type { Celebrity, CelebrityCategory } from '../../types';
 import { CATEGORY_LABELS } from '../../types';
-import { formatFollowers } from '../../data/mock';
+import { formatFollowers } from '../../lib/format';
 
 const CATEGORIES: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer', 'pastor', 'politician'];
 

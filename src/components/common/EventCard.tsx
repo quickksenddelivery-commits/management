@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Heart, Users } from 'lucide-react';
 import type { Event } from '../../types';
-import { celebrities, formatDate, formatPrice } from '../../data/mock';
+import { formatDate, formatPrice } from '../../lib/format';
+import { getCachedCelebrity } from '../../lib/content';
 import { withFallback, eventPoster } from '../../lib/images';
 import { useStore } from '../../store/useStore';
 
@@ -22,7 +23,7 @@ const STATUS_LABELS = {
 
 export default function EventCard({ event, featured = false }: Props) {
   const { user, toggleSaveEvent } = useStore();
-  const celebrity    = celebrities.find(c => c.id === event.celebrityId);
+  const celebrity    = getCachedCelebrity(event.celebrityId);
   const isSaved      = user?.savedEvents.includes(event.id) ?? false;
   const lowestPrice  = event.ticketTiers.reduce((m, t) => t.price < m.price ? t : m, event.ticketTiers[0]);
   const totalAvail   = event.ticketTiers.reduce((s, t) => s + t.available, 0);

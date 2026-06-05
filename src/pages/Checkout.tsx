@@ -6,9 +6,9 @@ import {
   Wallet, Copy, Check, ShieldCheck, Globe, Zap, Lock,
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { api, getToken } from '../lib/api';
+import { api } from '../lib/api';
 import { useApiData } from '../hooks/useApiData';
-import { formatDate, formatPrice } from '../data/mock';
+import { formatDate, formatPrice } from '../lib/format';
 import { COINS, cartUsdTotal, toCrypto, formatCrypto, formatUSD, WHY_CRYPTO } from '../lib/crypto';
 import type { Coin } from '../lib/crypto';
 
@@ -18,7 +18,7 @@ const WHY_ICONS = [Globe, Zap, ShieldCheck, Lock];
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { user, cart, removeFromCart, updateQty, clearCart, purchaseTickets } = useStore();
+  const { user, cart, removeFromCart, updateQty, clearCart } = useStore();
   const [name, setName] = useState(user?.name ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
   const [coin, setCoin] = useState<Coin>(COINS[0]);
@@ -28,6 +28,7 @@ export default function Checkout() {
   const [step, setStep] = useState<Step>('cart');
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState(false);
+  const [orderError, setOrderError] = useState('');
 
   const coins = useApiData<Coin[]>(() => api.payments.coins(), COINS);
 
@@ -53,41 +54,34 @@ export default function Checkout() {
     e.preventDefault();
     setLoading(true);
     setPendingConfirm(false);
+    setOrderError('');
 
-    if (getToken()) {
-      // Live flow: create the order (reserves seats + returns crypto payment info),
-      // then confirm payment (issues one ticket per seat on the backend).
-      let createdOrderId: string | null = null;
-      try {
-        const { order } = await api.orders.create({
-          items: cart.map(i => ({ eventId: i.eventId, tierId: i.tierId, quantity: i.quantity })),
-          attendeeName: name,
-          attendeeEmail: email,
-          coin: coin.symbol,
-        });
-        createdOrderId = order._id;
-        setLastOrderId(createdOrderId);
-      } catch {
-        // Couldn't reach the backend to create the order — local demo fallback.
-        purchaseTickets(name, email);
-      }
-
-      if (createdOrderId) {
-        try {
-          await api.orders.confirm(createdOrderId, txHash.trim() || undefined);
-        } catch {
-          // The order is on the server but we couldn't confirm yet.
-          // We DON'T mint a local duplicate ticket — the order stays 'pending'
-          // and the user can retry from the Order Detail page.
-          setPendingConfirm(true);
-        }
-        clearCart();
-      }
-    } else {
-      // Offline / not signed in via API — local demo purchase.
-      await new Promise(r => setTimeout(r, 1200));
-      purchaseTickets(name, email);
+    // Create the order (reserves seats + returns crypto payment info)
+    let createdOrderId: string | null = null;
+    try {
+      const { order } = await api.orders.create({
+        items: cart.map(i => ({ eventId: i.eventId, tierId: i.tierId, quantity: i.quantity })),
+        attendeeName: name,
+        attendeeEmail: email,
+        coin: coin.symbol,
+      });
+      createdOrderId = order._id;
+      setLastOrderId(createdOrderId);
+    } catch (err) {
+      setOrderError(err instanceof Error ? err.message : 'Could not create your order. Please try again.');
+      setLoading(false);
+      return;
     }
+
+    // Confirm payment → backend issues one ticket per seat
+    try {
+      await api.orders.confirm(createdOrderId, txHash.trim() || undefined);
+    } catch {
+      // Order is on the server but couldn't be confirmed yet — leave it 'pending'
+      // so the user can retry from the Order Detail page.
+      setPendingConfirm(true);
+    }
+    clearCart();
 
     setLoading(false);
     setStep('success');
@@ -381,6 +375,12 @@ export default function Checkout() {
                 </div>
               </div>
 
+              {orderError && (
+                <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm">
+                  {orderError}
+                </div>
+              )}
+
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setStep('details')} className="px-5 py-3 rounded-xl border border-[rgba(124,58,237,0.3)] text-[#A0A0C0] hover:text-white font-medium text-sm transition-all flex items-center gap-2">
                   <ArrowLeft size={15} /> Back
@@ -390,9 +390,6 @@ export default function Checkout() {
                   {loading ? 'Confirming payment on-chain…' : <>I've Sent {formatCrypto(cryptoAmount, coin)}</>}
                 </button>
               </div>
-              <p className="text-center text-[#6060A0] text-xs">
-                Demo mode — no real blockchain transaction is broadcast. In production, payment is auto-detected on-chain before tickets are issued.
-              </p>
             </form>
           )}
         </div>
