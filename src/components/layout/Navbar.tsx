@@ -38,6 +38,7 @@ export default function Navbar() {
     { to: '/events', label: 'Events' },
     { to: '/celebrities', label: 'Celebrities' },
     { to: '/sponsorship', label: 'Sponsorship' },
+    ...(user?.role === 'admin' ? [{ to: '/admin', label: 'Admin' }] : []),
   ];
 
   const isActive = (to: string) =>

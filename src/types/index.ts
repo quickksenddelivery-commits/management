@@ -116,6 +116,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  role?: 'user' | 'admin';
   following: string[];
   savedEvents: string[];
   tickets: Ticket[];

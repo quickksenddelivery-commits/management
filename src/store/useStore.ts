@@ -8,6 +8,7 @@ type AuthResult = { success: boolean; error?: string };
 /** Map a backend user document to the frontend User shape. */
 type ApiUser = {
   id?: string; _id?: string; name: string; email: string; avatar?: string;
+  role?: 'user' | 'admin';
   following?: string[]; savedEvents?: string[];
 };
 const mapUser = (u: ApiUser): User => ({
@@ -15,6 +16,7 @@ const mapUser = (u: ApiUser): User => ({
   name: u.name,
   email: u.email,
   avatar: u.avatar,
+  role: u.role,
   following: u.following ?? [],
   savedEvents: u.savedEvents ?? [],
   tickets: [],

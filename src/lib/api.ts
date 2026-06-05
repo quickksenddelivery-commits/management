@@ -31,10 +31,15 @@ import type { Coin } from './crypto';
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5001/api';
 const API_ORIGIN = BASE_URL.replace(/\/api\/?$/, '');
 const TOKEN_KEY = 'rachead-token';
+const ADMIN_SECRET_KEY = 'rachead-admin-secret';
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (t: string) => localStorage.setItem(TOKEN_KEY, t);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+
+export const getAdminSecret = () => localStorage.getItem(ADMIN_SECRET_KEY);
+export const setAdminSecret = (s: string) => localStorage.setItem(ADMIN_SECRET_KEY, s);
+export const clearAdminSecret = () => localStorage.removeItem(ADMIN_SECRET_KEY);
 
 export class ApiError extends Error {
   status: number;
@@ -126,6 +131,8 @@ interface RequestOptions {
   body?: unknown;
   auth?: boolean;
   adminSecret?: string;
+  /** When true, attach the stored admin secret automatically if no explicit one is given */
+  admin?: boolean;
   query?: Query;
 }
 
@@ -142,15 +149,18 @@ function buildUrl(path: string, query?: Query): string {
 }
 
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<Envelope<T>> {
-  const { method = 'GET', body, auth = false, adminSecret, query } = opts;
+  const { method = 'GET', body, auth = false, adminSecret, admin, query } = opts;
 
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth) {
     const token = getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    // No token (e.g. local demo session) — fail fast without a doomed 401 round-trip.
+    if (!token) throw new ApiError('Not authenticated', 401);
+    headers['Authorization'] = `Bearer ${token}`;
   }
-  if (adminSecret) headers['x-admin-secret'] = adminSecret;
+  const secret = adminSecret ?? (admin ? getAdminSecret() ?? undefined : undefined);
+  if (secret) headers['x-admin-secret'] = secret;
 
   let res: Response;
   try {
@@ -274,17 +284,17 @@ const celebrities = {
     return r.data!.events;
   },
 
-  // Admin
-  async create(payload: Partial<Celebrity>, adminSecret: string): Promise<Celebrity> {
-    const r = await request<{ celebrity: Celebrity }>('/celebrities', { method: 'POST', auth: true, adminSecret, body: payload });
+  // Admin (admin secret is auto-attached from storage; pass adminSecret to override)
+  async create(payload: Partial<Celebrity>, adminSecret?: string): Promise<Celebrity> {
+    const r = await request<{ celebrity: Celebrity }>('/celebrities', { method: 'POST', auth: true, admin: true, adminSecret, body: payload });
     return r.data!.celebrity;
   },
-  async update(id: string, payload: Partial<Celebrity>, adminSecret: string): Promise<Celebrity> {
-    const r = await request<{ celebrity: Celebrity }>(`/celebrities/${id}`, { method: 'PATCH', auth: true, adminSecret, body: payload });
+  async update(id: string, payload: Partial<Celebrity>, adminSecret?: string): Promise<Celebrity> {
+    const r = await request<{ celebrity: Celebrity }>(`/celebrities/${id}`, { method: 'PATCH', auth: true, admin: true, adminSecret, body: payload });
     return r.data!.celebrity;
   },
-  async remove(id: string, adminSecret: string): Promise<void> {
-    await request(`/celebrities/${id}`, { method: 'DELETE', auth: true, adminSecret });
+  async remove(id: string, adminSecret?: string): Promise<void> {
+    await request(`/celebrities/${id}`, { method: 'DELETE', auth: true, admin: true, adminSecret });
   },
 };
 
@@ -316,17 +326,17 @@ const events = {
     return r.data!.event;
   },
 
-  // Admin
-  async create(payload: Partial<Event>, adminSecret: string): Promise<Event> {
-    const r = await request<{ event: Event }>('/events', { method: 'POST', auth: true, adminSecret, body: payload });
+  // Admin (admin secret is auto-attached from storage; pass adminSecret to override)
+  async create(payload: Partial<Event>, adminSecret?: string): Promise<Event> {
+    const r = await request<{ event: Event }>('/events', { method: 'POST', auth: true, admin: true, adminSecret, body: payload });
     return r.data!.event;
   },
-  async update(id: string, payload: Partial<Event>, adminSecret: string): Promise<Event> {
-    const r = await request<{ event: Event }>(`/events/${id}`, { method: 'PATCH', auth: true, adminSecret, body: payload });
+  async update(id: string, payload: Partial<Event>, adminSecret?: string): Promise<Event> {
+    const r = await request<{ event: Event }>(`/events/${id}`, { method: 'PATCH', auth: true, admin: true, adminSecret, body: payload });
     return r.data!.event;
   },
-  async remove(id: string, adminSecret: string): Promise<void> {
-    await request(`/events/${id}`, { method: 'DELETE', auth: true, adminSecret });
+  async remove(id: string, adminSecret?: string): Promise<void> {
+    await request(`/events/${id}`, { method: 'DELETE', auth: true, admin: true, adminSecret });
   },
 };
 
@@ -436,19 +446,21 @@ const sponsorship = {
     return r.data!.applications;
   },
 
-  // Admin
-  async listApplications(status: string | undefined, adminSecret: string): Promise<SponsorshipApplication[]> {
+  // Admin (admin secret is auto-attached from storage; pass adminSecret to override)
+  async listApplications(status?: string, adminSecret?: string): Promise<SponsorshipApplication[]> {
     const r = await request<{ applications: SponsorshipApplication[] }>('/sponsorship/applications', {
       auth: true,
+      admin: true,
       adminSecret,
       query: { status },
     });
     return r.data!.applications;
   },
-  async updateApplication(id: string, status: string, adminSecret: string): Promise<SponsorshipApplication> {
+  async updateApplication(id: string, status: string, adminSecret?: string): Promise<SponsorshipApplication> {
     const r = await request<{ application: SponsorshipApplication }>(`/sponsorship/applications/${id}`, {
       method: 'PATCH',
       auth: true,
+      admin: true,
       adminSecret,
       body: { status },
     });

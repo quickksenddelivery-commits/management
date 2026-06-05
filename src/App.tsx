@@ -13,11 +13,19 @@ import Checkout from './pages/Checkout';
 import Sponsorship from './pages/Sponsorship';
 import Profile from './pages/Profile';
 import OrderDetail from './pages/OrderDetail';
+import Admin from './pages/admin/Admin';
 import { useStore } from './store/useStore';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user } = useStore();
   if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useStore();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -42,6 +50,7 @@ export default function App() {
           <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="orders/:id" element={<RequireAuth><OrderDetail /></RequireAuth>} />
           <Route path="checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+          <Route path="admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
