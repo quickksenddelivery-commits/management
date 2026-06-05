@@ -174,7 +174,7 @@ export default function Home() {
               style={{ animationDelay: '.1s' }}
             >
               <span className="w-2 h-2 rounded-full bg-[#7C3AED] animate-pulse" />
-              <span className="text-[#A78BFA] text-xs font-bold tracking-widest uppercase">Africa's Premier Celebrity Platform</span>
+              <span className="text-[#A78BFA] text-xs font-bold tracking-widest uppercase">The Premier Celebrity Platform</span>
             </div>
 
             {/* Headline */}
@@ -336,7 +336,7 @@ export default function Home() {
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(124,58,237,0.12)] border border-[rgba(124,58,237,0.3)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                <span className="text-[#A78BFA] text-xs font-bold tracking-wider uppercase">Now Touring Africa 2026</span>
+                <span className="text-[#A78BFA] text-xs font-bold tracking-wider uppercase">On World Tour 2026</span>
               </div>
 
               <h3 className="text-5xl font-black text-white leading-tight">
@@ -595,7 +595,7 @@ export default function Home() {
               </h2>
               <p className="text-[#A0A0C0] text-lg max-w-xl mx-auto mb-10 leading-relaxed">
                 Reach millions of fans. Sell tickets. Host unforgettable experiences.
-                Join Africa's fastest-growing celebrity platform.
+                Join the world's fastest-growing celebrity platform.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link to="/register" className="accent-btn flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base">

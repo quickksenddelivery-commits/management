@@ -26,7 +26,7 @@ const TIER_THEME: Record<SponsorTier, { ring: string; chip: string; glow: string
 
 const REACH_STATS = [
   { icon: Users,      value: '1M+',  label: 'Engaged fans reached' },
-  { icon: Globe,      value: '12',   label: 'Countries across Africa & beyond' },
+  { icon: Globe,      value: '12+',  label: 'Countries worldwide' },
   { icon: TrendingUp, value: '85%',  label: 'Gen-Z & Millennial audience' },
   { icon: Sparkles,   value: '200+', label: 'Premium live events / year' },
 ];
@@ -189,7 +189,7 @@ export default function Sponsorship() {
               <span className="gradient-text-gold">On The Main Stage.</span>
             </h1>
             <p className="text-[#A0A0C0] text-lg leading-relaxed max-w-xl mb-8">
-              Sponsor Africa's biggest celebrity events and platform. Reach millions of engaged
+              Sponsor the world's biggest celebrity events and platform. Reach millions of engaged
               fans, activate your brand live, and create unforgettable moments alongside the stars.
             </p>
             <div className="flex flex-wrap gap-3">
