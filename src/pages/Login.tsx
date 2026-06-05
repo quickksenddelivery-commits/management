@@ -14,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const from = (location.state as { from?: string })?.from ?? '/dashboard';
+  const from = (location.state as { from?: string })?.from;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -23,7 +23,11 @@ export default function Login() {
     const result = await login(email, password);
     setLoading(false);
     if (result.success) {
-      navigate(from, { replace: true });
+      // Respect explicit `from` (deep-linked protected route);
+      // otherwise route admins straight to the Admin Console.
+      const role = useStore.getState().user?.role;
+      const target = from ?? (role === 'admin' ? '/admin' : '/dashboard');
+      navigate(target, { replace: true });
     } else {
       setError(result.error ?? 'Login failed');
     }

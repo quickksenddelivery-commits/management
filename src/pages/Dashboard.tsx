@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Ticket, Heart, Users, Calendar, MapPin, QrCode, X, Receipt, Settings, Handshake } from 'lucide-react';
+import { Ticket, Heart, Users, Calendar, MapPin, QrCode, X, Receipt, Settings, Handshake, Shield } from 'lucide-react';
 import type { Order } from '../lib/api';
 import type { SponsorshipApplication } from '../types';
 import { useStore } from '../store/useStore';
@@ -140,16 +140,43 @@ export default function Dashboard() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-black text-white">Hey, {user.name.split(' ')[0]} 👋</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-black text-white">Hey, {user.name.split(' ')[0]} 👋</h1>
+              {user.role === 'admin' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black tracking-widest uppercase bg-[rgba(245,158,11,0.15)] border border-[rgba(245,158,11,0.4)] text-[#FCD34D]">
+                  <Shield size={10} /> Admin
+                </span>
+              )}
+            </div>
             <p className="text-[#A0A0C0] text-sm truncate">{user.email}</p>
           </div>
-          <Link
-            to="/profile"
-            className="shrink-0 hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl border border-[rgba(124,58,237,0.3)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.1)] transition-all text-sm font-semibold"
-          >
-            <Settings size={14} /> Edit Profile
-          </Link>
+          <div className="shrink-0 hidden sm:flex items-center gap-2">
+            {user.role === 'admin' && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl gold-btn text-sm font-bold"
+              >
+                <Shield size={14} /> Admin Console
+              </Link>
+            )}
+            <Link
+              to="/profile"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[rgba(124,58,237,0.3)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.1)] transition-all text-sm font-semibold"
+            >
+              <Settings size={14} /> Edit Profile
+            </Link>
+          </div>
         </div>
+
+        {/* Admin shortcut banner (mobile + reinforcement) */}
+        {user.role === 'admin' && (
+          <Link
+            to="/admin"
+            className="flex sm:hidden items-center justify-center gap-2 mb-6 px-4 py-3 rounded-xl gold-btn text-sm font-bold"
+          >
+            <Shield size={14} /> Open Admin Console
+          </Link>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
