@@ -15,6 +15,8 @@ import Sponsorship from './pages/Sponsorship';
 import Profile from './pages/Profile';
 import OrderDetail from './pages/OrderDetail';
 import Admin from './pages/admin/Admin';
+import EventForm from './pages/admin/EventForm';
+import CelebrityForm from './pages/admin/CelebrityForm';
 import { useStore } from './store/useStore';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -61,6 +63,10 @@ export default function App() {
           <Route path="orders/:id" element={<RequireAuth><OrderDetail /></RequireAuth>} />
           <Route path="checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
           <Route path="admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+          <Route path="admin/events/new" element={<RequireAdmin><EventForm /></RequireAdmin>} />
+          <Route path="admin/events/:id/edit" element={<RequireAdmin><EventForm /></RequireAdmin>} />
+          <Route path="admin/celebrities/new" element={<RequireAdmin><CelebrityForm /></RequireAdmin>} />
+          <Route path="admin/celebrities/:id/edit" element={<RequireAdmin><CelebrityForm /></RequireAdmin>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

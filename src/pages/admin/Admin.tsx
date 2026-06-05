@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Calendar, Users, Handshake, Shield } from 'lucide-react';
 import AdminEvents from './AdminEvents';
 import AdminCelebrities from './AdminCelebrities';
 import AdminApplications from './AdminApplications';
 
 type AdminTab = 'events' | 'celebrities' | 'applications';
+const VALID_TABS: AdminTab[] = ['events', 'celebrities', 'applications'];
 
 /**
  * Admin Console.
  * Access is gated upstream by RequireAdmin (checks user.role === 'admin' on the
- * JWT from the backend). No client-side secret prompt — admin identity lives in
- * the database alongside the user account, governed entirely by the admin role.
+ * JWT from the backend). The active tab is reflected in the URL (?tab=) so
+ * sub-pages (e.g. /admin/events/new) can come back to the right tab.
  */
 export default function Admin() {
-  const [tab, setTab] = useState<AdminTab>('events');
+  const [params, setParams] = useSearchParams();
+  const requested = params.get('tab') as AdminTab | null;
+  const tab: AdminTab = requested && VALID_TABS.includes(requested) ? requested : 'events';
+  const setTab = (next: AdminTab) => setParams({ tab: next }, { replace: true });
 
   const TABS: { key: AdminTab; label: string; icon: typeof Calendar; render: () => React.ReactNode }[] = [
     { key: 'events',       label: 'Events',       icon: Calendar,  render: () => <AdminEvents /> },
