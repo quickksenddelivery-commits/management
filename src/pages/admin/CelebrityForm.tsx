@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Users, Save, AlertCircle, Loader, Trash2 } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
+import ImagePicker from '../../components/common/ImagePicker';
 import type { Celebrity, CelebrityCategory } from '../../types';
 import { CATEGORY_LABELS } from '../../types';
 
@@ -187,12 +188,28 @@ export default function CelebrityForm() {
               {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
             </select>
           </Field>
-          <Field label="Image URL *">
-            <input type="url" value={form.image} onChange={(e) => set('image', e.target.value)} className={inputCls} placeholder="https://…" required />
-          </Field>
-          <Field label="Cover Image URL *">
-            <input type="url" value={form.coverImage} onChange={(e) => set('coverImage', e.target.value)} className={inputCls} placeholder="https://…" required />
-          </Field>
+          <div className="sm:col-span-2">
+            <ImagePicker
+              label="Portrait"
+              required
+              folder="celebrities"
+              previewAspect="aspect-[3/4] max-w-xs mx-auto sm:mx-0"
+              value={form.image}
+              onChange={(url) => set('image', url)}
+              hint="Vertical portrait used across cards and the profile page."
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <ImagePicker
+              label="Cover banner"
+              required
+              folder="celebrities"
+              previewAspect="aspect-[3/1]"
+              value={form.coverImage}
+              onChange={(url) => set('coverImage', url)}
+              hint="Wide banner shown at the top of the celebrity profile page."
+            />
+          </div>
           <Field label="Nationality">
             <input type="text" value={form.nationality} onChange={(e) => set('nationality', e.target.value)} className={inputCls} />
           </Field>

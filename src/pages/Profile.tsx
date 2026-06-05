@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User as UserIcon, ArrowLeft, Check } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import ImagePicker from '../components/common/ImagePicker';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -96,17 +97,15 @@ export default function Profile() {
           />
         </div>
 
-        <div>
-          <label className="block text-[#A0A0C0] text-sm font-medium mb-2">Avatar URL <span className="text-[#6060A0] font-normal">(optional)</span></label>
-          <input
-            type="url"
-            value={avatar}
-            onChange={(e) => setAvatar(e.target.value)}
-            placeholder="https://…/avatar.jpg"
-            className="w-full bg-[#1C1C3A] border border-[rgba(124,58,237,0.2)] rounded-xl px-4 py-3 text-white placeholder-[#6060A0] focus:outline-none focus:border-[#7C3AED] text-sm transition-colors"
-          />
-          <p className="text-[#6060A0] text-xs mt-1.5">Paste any public image URL. Direct upload comes in Stage 2.</p>
-        </div>
+        <ImagePicker
+          label="Avatar"
+          folder="avatars"
+          previewAspect="aspect-square max-w-[160px]"
+          value={avatar}
+          onChange={setAvatar}
+          hint="Upload a file or paste a public image URL. Square photos look best."
+        />
+        {!avatar && <p className="text-[#6060A0] text-xs -mt-2">Leave blank to keep your default monogram avatar.</p>}
 
         <div className="pt-2 flex items-center gap-3">
           <Link

@@ -468,6 +468,54 @@ const sponsorship = {
   },
 };
 
+/* ───────────────── Uploads — /api/uploads ───────────────── */
+
+export interface UploadedImage {
+  url: string;
+  publicId: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
+}
+
+const uploads = {
+  /**
+   * Upload a single image file. Multipart/form-data (`file` field) is built
+   * here — do NOT route through `request()`, which assumes JSON.
+   * `folder` is forwarded to Cloudinary (e.g. "events", "celebrities", "avatars").
+   */
+  async image(file: File, folder?: string): Promise<UploadedImage> {
+    const token = getToken();
+    if (!token) throw new ApiError('Sign in required to upload images', 401);
+
+    const fd = new FormData();
+    fd.append('file', file);
+    if (folder) fd.append('folder', folder);
+
+    let res: Response;
+    try {
+      res = await fetch(`${BASE_URL}/uploads/image`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+    } catch {
+      throw new ApiError('Network error — is the backend running?', 0);
+    }
+
+    const text = await res.text();
+    let body: { status?: string; data?: UploadedImage; message?: string } = {};
+    if (text) { try { body = JSON.parse(text); } catch { /* ignore */ } }
+
+    if (!res.ok) {
+      if (res.status === 401) clearToken();
+      throw new ApiError(body.message || `Upload failed (${res.status})`, res.status, body);
+    }
+    return body.data!;
+  },
+};
+
 /* ───────────────── Health ───────────────── */
 
 async function health(): Promise<{ status: string; service: string; timestamp: string }> {
@@ -486,6 +534,7 @@ export const api = {
   orders,
   tickets,
   sponsorship,
+  uploads,
   health,
   isAuthenticated: () => !!getToken(),
 };

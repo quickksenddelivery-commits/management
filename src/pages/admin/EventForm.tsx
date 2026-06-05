@@ -4,6 +4,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Save, AlertCircle, Loader, Trash2 } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
 import { loadCelebrities } from '../../lib/content';
+import ImagePicker from '../../components/common/ImagePicker';
 import type { Event, Celebrity, CelebrityCategory } from '../../types';
 
 const CATEGORIES: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer', 'pastor', 'politician'];
@@ -214,9 +215,17 @@ export default function EventForm() {
           <Field label="Country *">
             <input type="text" value={form.country} onChange={(e) => set('country', e.target.value)} className={inputCls} required />
           </Field>
-          <Field label="Image URL *">
-            <input type="url" value={form.image} onChange={(e) => set('image', e.target.value)} className={inputCls} placeholder="https://…" required />
-          </Field>
+          <div className="sm:col-span-2">
+            <ImagePicker
+              label="Event poster"
+              required
+              folder="events"
+              previewAspect="aspect-video"
+              value={form.image}
+              onChange={(url) => set('image', url)}
+              hint="Wide poster shown across cards and the event detail banner."
+            />
+          </div>
           <div className="sm:col-span-2">
             <Field label="Description">
               <textarea rows={4} value={form.description} onChange={(e) => set('description', e.target.value)} className={`${inputCls} resize-none`} />
