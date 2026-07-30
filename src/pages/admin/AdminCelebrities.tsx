@@ -88,10 +88,11 @@ export default function AdminCelebrities() {
                   to={`/admin/celebrities/${c.id}/edit`}
                   className="p-2 rounded-lg bg-[rgba(124,58,237,0.12)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.22)] transition-all"
                   title="Edit"
+                  aria-label={`Edit ${c.name}`}
                 >
                   <Pencil size={14} />
                 </Link>
-                <button onClick={() => handleDelete(c.id, c.name)} className="p-2 rounded-lg bg-[rgba(239,68,68,0.1)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.2)] transition-all" title="Delete">
+                <button onClick={() => handleDelete(c.id, c.name)} className="p-2 rounded-lg bg-[rgba(239,68,68,0.1)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.2)] transition-all" title="Delete" aria-label={`Delete ${c.name}`}>
                   <Trash2 size={14} />
                 </button>
               </div>

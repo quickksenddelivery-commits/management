@@ -5,6 +5,7 @@ import { CATEGORY_LABELS, CATEGORY_COLORS } from '../../types';
 import { formatFollowers } from '../../lib/format';
 import { withFallback, celebrityPortrait } from '../../lib/images';
 import { useStore } from '../../store/useStore';
+import TiltCard from '../motion/TiltCard';
 
 interface Props { celebrity: Celebrity }
 
@@ -19,7 +20,7 @@ export default function CelebrityCard({ celebrity }: Props) {
 
   return (
     <Link to={`/celebrity/${celebrity.id}`} className="block group">
-      <div className="glow-card bg-[#13132A] rounded-2xl overflow-hidden">
+      <TiltCard className="glow-card bg-[#13132A] rounded-2xl overflow-hidden">
 
         {/* Image */}
         <div className="relative aspect-[3/4] overflow-hidden">
@@ -76,7 +77,7 @@ export default function CelebrityCard({ celebrity }: Props) {
             {isFollowing ? '✓ Following' : '+ Follow'}
           </button>
         </div>
-      </div>
+      </TiltCard>
     </Link>
   );
 }

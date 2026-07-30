@@ -14,6 +14,8 @@ import Checkout from './pages/Checkout';
 import Sponsorship from './pages/Sponsorship';
 import Profile from './pages/Profile';
 import OrderDetail from './pages/OrderDetail';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import Admin from './pages/admin/Admin';
 import EventForm from './pages/admin/EventForm';
 import CelebrityForm from './pages/admin/CelebrityForm';
@@ -32,15 +34,23 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Minimum splash time so the logo doesn't just flash on fast connections —
+// not a fake progress bar, just enough to read as intentional branding.
+const MIN_SPLASH_MS = 700;
+
 export default function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Kick off backend session hydration immediately so it's done by the time
-    // the 5s splash finishes — the main app drops in already authenticated.
-    useStore.getState().initAuth();
-    const t = setTimeout(() => setReady(true), 5000);
-    return () => clearTimeout(t);
+    let alive = true;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const start = Date.now();
+    useStore.getState().initAuth().finally(() => {
+      if (!alive) return;
+      const elapsed = Date.now() - start;
+      timeoutId = setTimeout(() => { if (alive) setReady(true); }, Math.max(0, MIN_SPLASH_MS - elapsed));
+    });
+    return () => { alive = false; clearTimeout(timeoutId); };
   }, []);
 
   if (!ready) return <AppLoader />;
@@ -56,6 +66,8 @@ export default function App() {
           <Route path="celebrities" element={<Celebrities />} />
           <Route path="celebrity/:id" element={<CelebrityProfile />} />
           <Route path="sponsorship" element={<Sponsorship />} />
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="terms" element={<Terms />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />

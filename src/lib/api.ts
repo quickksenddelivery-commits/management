@@ -1,5 +1,5 @@
 /**
- * Rachead API client — integrates every endpoint of the management-backend
+ * FanConnectPro API client — integrates every endpoint of the fanconnectpro-backend
  * (Node + Express + Mongoose) at `VITE_API_URL` (default http://localhost:5001/api).
  *
  * Usage:
@@ -30,8 +30,8 @@ import type { Coin } from './crypto';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5001/api';
 const API_ORIGIN = BASE_URL.replace(/\/api\/?$/, '');
-const TOKEN_KEY = 'rachead-token';
-const ADMIN_SECRET_KEY = 'rachead-admin-secret';
+const TOKEN_KEY = 'fanconnectpro-token';
+const ADMIN_SECRET_KEY = 'fanconnectpro-admin-secret';
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (t: string) => localStorage.setItem(TOKEN_KEY, t);

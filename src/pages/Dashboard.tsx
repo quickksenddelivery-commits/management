@@ -11,6 +11,9 @@ import { loadSavedEvents, loadFollowing } from '../lib/content';
 import { withFallback, celebrityPortrait } from '../lib/images';
 import type { Ticket as TicketType, Event as EventType, Celebrity as CelebrityType } from '../types';
 import EventCard from '../components/common/EventCard';
+import { RevealGroup, RevealItem } from '../components/motion/Reveal';
+import TiltCard from '../components/motion/TiltCard';
+import { useSeo } from '../components/seo/useSeo';
 
 type Tab = 'tickets' | 'orders' | 'applications' | 'saved' | 'following';
 
@@ -30,9 +33,9 @@ const APPLICATION_STATUS_STYLES: Record<string, string> = {
 function QRModal({ ticket, onClose }: { ticket: TicketType; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
       <div
-        className="relative bg-[#13132A] border border-[rgba(124,58,237,0.3)] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl"
+        className="relative bg-[#13132A] border border-[rgba(124,58,237,0.3)] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-scale-in"
         onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-[#A0A0C0] hover:text-white">
@@ -79,6 +82,7 @@ function QRModal({ ticket, onClose }: { ticket: TicketType; onClose: () => void 
 }
 
 export default function Dashboard() {
+  useSeo({ title: 'My Dashboard', description: 'Your tickets, orders, and saved events on FanConnectPro.', index: false, path: '/dashboard' });
   const { user, sponsorshipApplications: localApplications } = useStore();
   const [tab, setTab] = useState<Tab>('tickets');
   const [qrTicket, setQrTicket] = useState<TicketType | null>(null);
@@ -179,14 +183,14 @@ export default function Dashboard() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <RevealGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           {TABS.map(t => (
-            <div key={t.key} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-4 text-center">
+            <RevealItem key={t.key} y={16} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-4 text-center">
               <p className="text-2xl font-black gradient-text">{t.count}</p>
               <p className="text-[#A0A0C0] text-xs mt-1">{t.label}</p>
-            </div>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-xl p-1 mb-8">
@@ -224,9 +228,9 @@ export default function Dashboard() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
+              <RevealGroup className="space-y-4">
                 {tickets.map(ticket => (
-                  <div key={ticket.id} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <RevealItem key={ticket.id} y={14} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-white font-bold truncate">{ticket.eventTitle}</p>
@@ -250,9 +254,9 @@ export default function Dashboard() {
                         <QrCode size={15} /> View QR
                       </button>
                     </div>
-                  </div>
+                  </RevealItem>
                 ))}
-              </div>
+              </RevealGroup>
             )}
           </div>
         )}
@@ -272,13 +276,13 @@ export default function Dashboard() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
+              <RevealGroup className="space-y-4">
                 {orders.map(order => {
                   const itemCount = order.items.reduce((s, i) => s + i.quantity, 0);
                   const firstItem = order.items[0];
                   return (
+                    <RevealItem key={order._id} y={14}>
                     <Link
-                      key={order._id}
                       to={`/orders/${order._id}`}
                       className="block bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5 hover:border-[rgba(124,58,237,0.45)] transition-all"
                     >
@@ -311,9 +315,10 @@ export default function Dashboard() {
                         </p>
                       )}
                     </Link>
+                    </RevealItem>
                   );
                 })}
-              </div>
+              </RevealGroup>
             )}
           </div>
         )}
@@ -333,9 +338,9 @@ export default function Dashboard() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
+              <RevealGroup className="space-y-4">
                 {myApplications.map(app => (
-                  <div key={app.id} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
+                  <RevealItem key={app.id} y={14} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -372,12 +377,12 @@ export default function Dashboard() {
                     )}
                     {app.status === 'approved' && (
                       <p className="text-emerald-400 text-xs mt-3 pt-3 border-t border-[rgba(124,58,237,0.12)]">
-                        ✓ Approved — welcome to Rachead's partner network.
+                        ✓ Approved — welcome to FanConnectPro's partner network.
                       </p>
                     )}
-                  </div>
+                  </RevealItem>
                 ))}
-              </div>
+              </RevealGroup>
             )}
           </div>
         )}
@@ -395,11 +400,11 @@ export default function Dashboard() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {savedEventList.map(event => (
-                  <EventCard key={event.id} event={event} />
+                  <RevealItem key={event.id}><EventCard event={event} /></RevealItem>
                 ))}
-              </div>
+              </RevealGroup>
             )}
           </div>
         )}
@@ -417,24 +422,26 @@ export default function Dashboard() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <RevealGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {followingCelebs.map(celeb => (
-                  <Link key={celeb.id} to={`/celebrity/${celeb.id}`} className="block">
-                    <div className="glow-card bg-[#13132A] rounded-2xl p-4 flex items-center gap-3">
-                      <img
-                        src={celeb.image}
-                        alt={celeb.name}
-                        {...withFallback(celeb._imageFallback ?? celebrityPortrait(celeb.name, celeb.category))}
-                        className="w-12 h-12 rounded-xl object-cover object-top border border-[rgba(124,58,237,0.3)]"
-                      />
-                      <div className="min-w-0">
-                        <p className="text-white font-semibold text-sm truncate">{celeb.name}</p>
-                        <p className="text-[#A0A0C0] text-xs">{celeb.nationality}</p>
-                      </div>
-                    </div>
-                  </Link>
+                  <RevealItem key={celeb.id}>
+                    <Link to={`/celebrity/${celeb.id}`} className="block">
+                      <TiltCard max={10} className="glow-card bg-[#13132A] rounded-2xl p-4 flex items-center gap-3">
+                        <img
+                          src={celeb.image}
+                          alt={celeb.name}
+                          {...withFallback(celeb._imageFallback ?? celebrityPortrait(celeb.name, celeb.category))}
+                          className="w-12 h-12 rounded-xl object-cover object-top border border-[rgba(124,58,237,0.3)]"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-white font-semibold text-sm truncate">{celeb.name}</p>
+                          <p className="text-[#A0A0C0] text-xs">{celeb.nationality}</p>
+                        </div>
+                      </TiltCard>
+                    </Link>
+                  </RevealItem>
                 ))}
-              </div>
+              </RevealGroup>
             )}
           </div>
         )}

@@ -10,6 +10,8 @@ import type { TicketTier, Event as EventType, Celebrity as CelebrityType, Sponso
 import type { PendingSponsor } from '../lib/api';
 import { TIER_COLORS, SPONSOR_TIER_LABELS } from '../types';
 import EventCard from '../components/common/EventCard';
+import Reveal, { RevealGroup, RevealItem } from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 const TIER_LABELS = { general: 'General', vip: '⭐ VIP', vvip: '👑 VVIP', meetgreet: '🤝 Meet & Greet' };
 const TIER_BG = {
@@ -58,6 +60,14 @@ export default function EventDetail() {
     [],
     [event?.id]
   );
+
+  useSeo({
+    title: event ? event.title : 'Event',
+    description: event
+      ? `${event.title} — ${formatDate(event.date)} at ${event.venue}, ${event.city}. ${event.description.slice(0, 120)}`
+      : 'Event details on FanConnectPro.',
+    path: `/events/${id}`,
+  });
 
   if (!eventLoaded) {
     return (
@@ -161,26 +171,26 @@ export default function EventDetail() {
           {/* Left: Details */}
           <div className="lg:col-span-2 space-y-8">
             {/* Meta info */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <RevealGroup className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
                 { icon: Calendar, label: 'Date', value: formatDate(event.date) },
                 { icon: Clock, label: 'Time', value: formatTime(event.date) },
                 { icon: MapPin, label: 'Venue', value: event.venue },
                 { icon: Users, label: 'Doors Open', value: event.doorsOpen ? formatTime(event.doorsOpen) : 'TBC' },
               ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-xl p-4">
+                <RevealItem key={label} y={16} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Icon size={14} className="text-[#7C3AED]" />
                     <span className="text-[#6060A0] text-xs uppercase tracking-wider">{label}</span>
                   </div>
                   <p className="text-white text-sm font-semibold leading-tight">{value}</p>
-                </div>
+                </RevealItem>
               ))}
-            </div>
+            </RevealGroup>
 
             {/* Celebrity */}
             {celebrity && (
-              <div className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5 flex items-center gap-4">
+              <Reveal className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5 flex items-center gap-4">
                 <img
                   src={celebrity.image}
                   alt={celebrity.name}
@@ -197,14 +207,14 @@ export default function EventDetail() {
                 <Link to={`/celebrity/${celebrity.id}`} className="shrink-0 px-4 py-2 rounded-xl border border-[rgba(124,58,237,0.3)] text-[#A78BFA] text-sm font-medium hover:bg-[rgba(124,58,237,0.1)] transition-all">
                   Profile
                 </Link>
-              </div>
+              </Reveal>
             )}
 
             {/* Description */}
-            <div>
+            <Reveal>
               <h3 className="text-white font-bold text-lg mb-3">About This Event</h3>
               <p className="text-[#A0A0C0] leading-relaxed">{event.description}</p>
-            </div>
+            </Reveal>
 
             {/* Tags */}
             {event.tags.length > 0 && (
@@ -218,7 +228,7 @@ export default function EventDetail() {
             )}
 
             {/* Sponsors */}
-            <div className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
+            <Reveal className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-bold text-lg">
                   {eventSponsors.length > 0 || pendingSponsors.length > 0 ? 'Event Sponsors' : 'Sponsorship'}
@@ -258,15 +268,15 @@ export default function EventDetail() {
                   ⏳ Your sponsorship application is under review — our team will confirm shortly.
                 </p>
               )}
-            </div>
+            </Reveal>
 
             {/* More events by celebrity */}
             {moreByCeleb.length > 0 && (
               <div>
                 <h3 className="text-white font-bold text-lg mb-4">More from {celebrity?.name}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {moreByCeleb.map(e => <EventCard key={e.id} event={e} />)}
-                </div>
+                <RevealGroup className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {moreByCeleb.map(e => <RevealItem key={e.id}><EventCard event={e} /></RevealItem>)}
+                </RevealGroup>
               </div>
             )}
           </div>
@@ -295,12 +305,14 @@ export default function EventDetail() {
               {/* Ticket tiers */}
               <div className="space-y-3">
                 <h3 className="text-white font-bold text-lg">Select Tickets</h3>
+                <RevealGroup className="space-y-3">
                 {event.ticketTiers.map((tier: TicketTier) => {
                   const qty = quantities[tier.id] ?? 0;
                   const soldOut = tier.available === 0 || event.status === 'sold_out';
                   return (
-                    <div
+                    <RevealItem
                       key={tier.id}
+                      y={14}
                       className={`${TIER_BG[tier.tier]} border ${TIER_COLORS[tier.tier]} rounded-2xl p-4 transition-all ${soldOut ? 'opacity-60' : ''}`}
                     >
                       <div className="flex items-start justify-between mb-2">
@@ -336,9 +348,10 @@ export default function EventDetail() {
                       ) : (
                         <span className="text-orange-400 text-xs font-semibold">Sold Out</span>
                       )}
-                    </div>
+                    </RevealItem>
                   );
                 })}
+                </RevealGroup>
               </div>
 
               {/* Cart summary */}

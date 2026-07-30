@@ -5,6 +5,7 @@ import { formatDate, formatPrice } from '../../lib/format';
 import { getCachedCelebrity } from '../../lib/content';
 import { withFallback, eventPoster } from '../../lib/images';
 import { useStore } from '../../store/useStore';
+import TiltCard from '../motion/TiltCard';
 
 interface Props {
   event: Event;
@@ -36,7 +37,7 @@ export default function EventCard({ event, featured = false }: Props) {
 
   return (
     <Link to={`/events/${event.id}`} className="block group h-full">
-      <div className="glow-card bg-[#13132A] rounded-2xl overflow-hidden flex flex-col h-full">
+      <TiltCard max={6} className="glow-card bg-[#13132A] rounded-2xl overflow-hidden flex flex-col h-full">
 
         {/* Image */}
         <div className={`relative overflow-hidden shrink-0 ${featured ? 'aspect-video' : 'aspect-[16/10]'}`}>
@@ -55,6 +56,8 @@ export default function EventCard({ event, featured = false }: Props) {
             </span>
             <button
               onClick={handleSave}
+              aria-label={isSaved ? 'Remove from saved events' : 'Save event'}
+              aria-pressed={isSaved}
               className={`w-8 h-8 rounded-lg backdrop-blur-sm border flex items-center justify-center transition-all ${
                 isSaved
                   ? 'bg-[#7C3AED]/30 border-[#7C3AED]/60 text-[#A78BFA] shadow-[0_0_12px_rgba(124,58,237,.4)]'
@@ -127,7 +130,7 @@ export default function EventCard({ event, featured = false }: Props) {
             </span>
           </div>
         </div>
-      </div>
+      </TiltCard>
     </Link>
   );
 }

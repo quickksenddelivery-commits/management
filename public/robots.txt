@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Private / account-only areas — not useful to index
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /checkout
+Disallow: /orders/
+Disallow: /admin
+
+Sitemap: https://fanconnectpro.com/sitemap.xml

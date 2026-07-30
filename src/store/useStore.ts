@@ -192,7 +192,7 @@ export const useStore = create<AppStore>()(
       },
     }),
     {
-      name: 'rachead-store',
+      name: 'fanconnectpro-store',
       partialize: (s) => ({
         user: s.user,
         cart: s.cart,

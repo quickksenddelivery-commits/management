@@ -2,17 +2,26 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
+import { EventCardSkeleton } from '../components/common/Skeleton';
+import { staggerDelay } from '../lib/animation';
 import { loadEvents } from '../lib/content';
 import type { Event } from '../types';
-import { useApiData } from '../hooks/useApiData';
+import { useApiDataLoading } from '../hooks/useApiData';
 import type { CelebrityCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
+import Reveal from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 const ALL_CATEGORIES: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer'];
 const ALL_COUNTRIES = ['Nigeria', 'South Africa', 'Kenya', 'Ghana', 'United Kingdom'];
 const ALL_STATUSES = ['upcoming', 'live', 'sold_out'] as const;
 
 export default function Events() {
+  useSeo({
+    title: 'Browse Events',
+    description: 'Find concerts, VIP experiences, and meet-and-greets from your favorite celebrities across Africa, the UK, and beyond.',
+    path: '/events',
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
 
@@ -32,7 +41,7 @@ export default function Events() {
   const [status, setStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  const events = useApiData<Event[]>(loadEvents, []);
+  const { data: events, loading } = useApiDataLoading<Event[]>(loadEvents, []);
 
   const filtered = useMemo(() => {
     return events.filter(e => {
@@ -57,11 +66,13 @@ export default function Events() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
       {/* Header */}
-      <div className="mb-10">
+      <Reveal className="mb-10">
         <p className="text-[#7C3AED] text-sm font-semibold tracking-widest uppercase mb-2">All Events</p>
         <h1 className="text-4xl font-black text-white mb-2">Browse Events</h1>
-        <p className="text-[#A0A0C0]">{filtered.length} event{filtered.length !== 1 ? 's' : ''} found</p>
-      </div>
+        <p className="text-[#A0A0C0]">
+          {loading ? 'Loading events…' : `${filtered.length} event${filtered.length !== 1 ? 's' : ''} found`}
+        </p>
+      </Reveal>
 
       {/* Search + Filter toggle */}
       <div className="flex gap-3 mb-6">
@@ -187,11 +198,23 @@ export default function Events() {
       </div>
 
       {/* Grid */}
-      {filtered.length > 0 ? (
+      {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(event => (
-            <EventCard key={event.id} event={event} />
+          {Array.from({ length: 6 }, (_, i) => <EventCardSkeleton key={i} />)}
+        </div>
+      ) : filtered.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((event, i) => (
+            <div key={event.id} className="card-in" style={{ animationDelay: staggerDelay(i) }}>
+              <EventCard event={event} />
+            </div>
           ))}
+        </div>
+      ) : events.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-6xl mb-4">🎭</p>
+          <h3 className="text-white text-xl font-bold mb-2">No events yet</h3>
+          <p className="text-[#A0A0C0]">Check back soon — new events are added regularly.</p>
         </div>
       ) : (
         <div className="text-center py-20">

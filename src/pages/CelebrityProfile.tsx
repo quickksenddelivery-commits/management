@@ -9,6 +9,8 @@ import { useStore } from '../store/useStore';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '../types';
 import type { Celebrity, Event } from '../types';
 import EventCard from '../components/common/EventCard';
+import Reveal, { RevealGroup, RevealItem } from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 export default function CelebrityProfile() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +31,14 @@ export default function CelebrityProfile() {
   }, [id]);
 
   const celebEventsData = useApiData<Event[]>(() => loadCelebrityEvents(id ?? ''), [], [id]);
+
+  useSeo({
+    title: celebrity ? celebrity.name : 'Celebrity',
+    description: celebrity
+      ? `${celebrity.name} — ${celebrity.nationality}${celebrity.genre ? ` · ${celebrity.genre}` : ''}. ${celebrity.bio.slice(0, 120)}`
+      : 'Celebrity profile on FanConnectPro.',
+    path: `/celebrity/${id}`,
+  });
 
   if (!celebLoaded) {
     return (
@@ -117,7 +127,7 @@ export default function CelebrityProfile() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-16">
           {/* Left: bio + stats */}
-          <div className="lg:col-span-1 space-y-5">
+          <Reveal className="lg:col-span-1 space-y-5">
             <div className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
               <h3 className="text-white font-bold mb-3">About</h3>
               <p className="text-[#A0A0C0] text-sm leading-relaxed">{celebrity.bio}</p>
@@ -135,25 +145,25 @@ export default function CelebrityProfile() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
 
           {/* Right: Events */}
           <div className="lg:col-span-2 space-y-8">
             {upcomingEvents.length > 0 && (
               <div>
                 <h2 className="text-white font-bold text-xl mb-4">Upcoming Events</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {upcomingEvents.map(e => <EventCard key={e.id} event={e} />)}
-                </div>
+                <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {upcomingEvents.map(e => <RevealItem key={e.id}><EventCard event={e} /></RevealItem>)}
+                </RevealGroup>
               </div>
             )}
 
             {pastEvents.length > 0 && (
               <div>
                 <h2 className="text-white font-bold text-xl mb-4">Past Events</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-70">
-                  {pastEvents.map(e => <EventCard key={e.id} event={e} />)}
-                </div>
+                <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-70">
+                  {pastEvents.map(e => <RevealItem key={e.id}><EventCard event={e} /></RevealItem>)}
+                </RevealGroup>
               </div>
             )}
 

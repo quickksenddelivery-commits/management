@@ -3,10 +3,15 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronRight, Crown, Star, Zap, Shield } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
 import CelebrityCard from '../components/common/CelebrityCard';
+import { EventCardSkeleton, CelebrityCardSkeleton } from '../components/common/Skeleton';
+import { staggerDelay } from '../lib/animation';
 import { formatPrice } from '../lib/format';
 import { loadEvents, loadCelebrities, loadSponsors } from '../lib/content';
-import { useApiData } from '../hooks/useApiData';
+import { useApiData, useApiDataLoading } from '../hooks/useApiData';
 import { heroBackground, withFallback, celebrityPortrait, celebrityCover, eventPoster } from '../lib/images';
+import { RevealGroup, RevealItem } from '../components/motion/Reveal';
+import HeroScene from '../components/three/HeroScene';
+import { useSeo } from '../components/seo/useSeo';
 import type { CelebrityCategory, Event as EventType, Celebrity as CelebrityType, Sponsor } from '../types';
 
 const HERO_BG = heroBackground();
@@ -97,9 +102,14 @@ function Particle({ style }: { style: React.CSSProperties }) {
 
 export default function Home() {
   useScrollReveal();
+  useSeo({
+    title: 'FanConnectPro',
+    description: 'Book exclusive tickets to concerts, VIP tables, backstage access and meet-and-greets with the biggest celebrities in entertainment. All payments settle in crypto.',
+    path: '/',
+  });
 
-  const allEvents = useApiData<EventType[]>(loadEvents, []);
-  const allCelebs = useApiData<CelebrityType[]>(loadCelebrities, []);
+  const { data: allEvents, loading: eventsLoading } = useApiDataLoading<EventType[]>(loadEvents, []);
+  const { data: allCelebs, loading: celebsLoading } = useApiDataLoading<CelebrityType[]>(loadCelebrities, []);
   const allSponsors = useApiData<Sponsor[]>(() => loadSponsors(), []);
 
   const featured = allEvents.filter(e => e.isFeatured);
@@ -112,7 +122,7 @@ export default function Home() {
   return (
     <div>
       {/* ════════════ HERO ════════════ */}
-      <section className="relative h-screen min-h-[680px] flex items-center overflow-hidden">
+      <section className="relative h-screen min-h-[680px] flex items-center overflow-hidden pt-20 sm:pt-24">
 
         {/* ── Animated gradient base ── */}
         <div className="hero-bg-animate absolute inset-0" />
@@ -139,6 +149,11 @@ export default function Home() {
 
         {/* ── Grid pattern overlay ── */}
         <div className="grid-pattern absolute inset-0 opacity-60" />
+
+        {/* ── Real WebGL 3D centerpiece (desktop only) ── */}
+        <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-[560px] h-[560px] z-[5]">
+          <HeroScene />
+        </div>
 
         {/* ── Cinematic gradient overlay ── */}
         <div className="hero-overlay absolute inset-0" />
@@ -269,6 +284,7 @@ export default function Home() {
       </section>
 
       {/* ════════════ FEATURED EVENTS ════════════ */}
+      {(eventsLoading || featured.length > 0) && (
       <section className="py-16 section-fade">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-10">
@@ -286,12 +302,17 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map(event => (
-              <EventCard key={event.id} event={event} featured />
-            ))}
+            {eventsLoading
+              ? Array.from({ length: 3 }, (_, i) => <EventCardSkeleton key={i} featured />)
+              : featured.map((event, i) => (
+                  <div key={event.id} className="card-in" style={{ animationDelay: staggerDelay(i) }}>
+                    <EventCard event={event} featured />
+                  </div>
+                ))}
           </div>
         </div>
       </section>
+      )}
 
       {/* ════════════ CELEBRITY SPOTLIGHT ════════════ */}
       <section className="py-20 bg-[#0A0A16] section-fade">
@@ -403,17 +424,17 @@ export default function Home() {
           </div>
 
           {/* Tiers */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <RevealGroup className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {VIP_TIERS.map(({ icon: Icon, name, desc, color, bg, border }) => (
-              <div key={name} className={`gold-card rounded-2xl p-7 transition-all duration-300`}>
+              <RevealItem key={name} className={`gold-card rounded-2xl p-7 transition-all duration-300`}>
                 <div className={`w-12 h-12 rounded-xl ${bg} border ${border} flex items-center justify-center mb-5`}>
                   <Icon size={22} className={color} />
                 </div>
                 <h3 className={`text-xl font-black mb-3 ${color}`}>{name}</h3>
                 <p className="text-[#A0A0C0] text-sm leading-relaxed">{desc}</p>
-              </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealGroup>
 
           {/* Featured VIP CTA */}
           {vipEvent && vipTier && (
@@ -474,6 +495,7 @@ export default function Home() {
       </section>
 
       {/* ════════════ TRENDING CELEBRITIES ════════════ */}
+      {(celebsLoading || allCelebs.length > 0) && (
       <section className="py-20 bg-[#0A0A16] section-fade">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-10">
@@ -488,12 +510,17 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {allCelebs.map(celeb => (
-              <CelebrityCard key={celeb.id} celebrity={celeb} />
-            ))}
+            {celebsLoading
+              ? Array.from({ length: 6 }, (_, i) => <CelebrityCardSkeleton key={i} />)
+              : allCelebs.map((celeb, i) => (
+                  <div key={celeb.id} className="card-in" style={{ animationDelay: staggerDelay(i) }}>
+                    <CelebrityCard celebrity={celeb} />
+                  </div>
+                ))}
           </div>
         </div>
       </section>
+      )}
 
       {/* ════════════ CATEGORIES ════════════ */}
       <section className="py-20 section-fade">
@@ -504,26 +531,28 @@ export default function Home() {
               Event <span className="gradient-text">Categories</span>
             </h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <RevealGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {CATEGORIES.map(({ label, cat, emoji }) => {
               const count = allEvents.filter(e => e.category === cat).length;
               return (
-                <Link
-                  key={cat}
-                  to={`/events?category=${cat}`}
-                  className="group glow-card bg-[#13132A] rounded-2xl p-6 text-center"
-                >
-                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{emoji}</div>
-                  <p className="text-white text-sm font-bold group-hover:text-[#A78BFA] transition-colors">{label}</p>
-                  <p className="text-[#6060A0] text-xs mt-1">{count > 0 ? `${count} events` : 'Coming soon'}</p>
-                </Link>
+                <RevealItem key={cat} y={16}>
+                  <Link
+                    to={`/events?category=${cat}`}
+                    className="group glow-card bg-[#13132A] rounded-2xl p-6 text-center block"
+                  >
+                    <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{emoji}</div>
+                    <p className="text-white text-sm font-bold group-hover:text-[#A78BFA] transition-colors">{label}</p>
+                    <p className="text-[#6060A0] text-xs mt-1">{count > 0 ? `${count} events` : 'Coming soon'}</p>
+                  </Link>
+                </RevealItem>
               );
             })}
-          </div>
+          </RevealGroup>
         </div>
       </section>
 
       {/* ════════════ UPCOMING EVENTS ════════════ */}
+      {(eventsLoading || upcoming.length > 0) && (
       <section className="py-20 bg-[#0A0A16] section-fade">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-10">
@@ -538,9 +567,13 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcoming.map(event => (
-              <EventCard key={event.id} event={event} />
-            ))}
+            {eventsLoading
+              ? Array.from({ length: 6 }, (_, i) => <EventCardSkeleton key={i} />)
+              : upcoming.map((event, i) => (
+                  <div key={event.id} className="card-in" style={{ animationDelay: staggerDelay(i) }}>
+                    <EventCard event={event} />
+                  </div>
+                ))}
           </div>
           <div className="text-center mt-12">
             <Link to="/events" className="accent-btn inline-flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base">
@@ -549,6 +582,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ════════════ PARTNERS / SPONSORS ════════════ */}
       <section className="py-16 section-fade">
@@ -559,13 +593,13 @@ export default function Home() {
               Our <span className="gradient-text-gold">Partners</span>
             </h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <RevealGroup className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             {allSponsors.map(s => (
-              <div key={s.id} className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl px-4 py-7 flex items-center justify-center hover:border-[rgba(124,58,237,0.35)] transition-all group">
+              <RevealItem key={s.id} y={16} className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl px-4 py-7 flex items-center justify-center hover:border-[rgba(124,58,237,0.35)] transition-all group">
                 <img src={s.logo} alt={s.name} className="h-7 object-contain opacity-65 group-hover:opacity-100 transition-opacity" />
-              </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealGroup>
           <div className="text-center">
             <Link to="/sponsorship" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.3)] text-[#FCD34D] font-bold text-sm hover:bg-[rgba(245,158,11,0.18)] transition-all">
               <Crown size={15} /> Become a Sponsor
@@ -591,7 +625,7 @@ export default function Home() {
               </div>
               <h2 className="text-4xl sm:text-5xl font-black text-white mb-4">
                 List Your Event on{' '}
-                <span className="text-shimmer">RACHEAD</span>
+                <span className="text-shimmer">FANCONNECTPRO</span>
               </h2>
               <p className="text-[#A0A0C0] text-lg max-w-xl mx-auto mb-10 leading-relaxed">
                 Reach millions of fans. Sell tickets. Host unforgettable experiences.

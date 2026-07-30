@@ -3,8 +3,11 @@ import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Zap, Eye, EyeOff } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import Reveal from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 export default function Register() {
+  useSeo({ title: 'Create Account', description: 'Join FanConnectPro to book tickets, follow celebrities, and save your favorite events.', path: '/register' });
   const navigate = useNavigate();
   const { register } = useStore();
   const [name, setName] = useState('');
@@ -31,13 +34,13 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center px-4 py-20">
       <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#7C3AED]/8 blur-[120px] pointer-events-none" />
 
-      <div className="w-full max-w-md relative">
+      <Reveal className="w-full max-w-md relative" y={20}>
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-6">
             <div className="w-10 h-10 bg-[#7C3AED] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.5)]">
               <Zap size={20} className="text-white fill-white" />
             </div>
-            <span className="text-2xl font-black tracking-widest text-white">RACHEAD</span>
+            <span className="text-2xl font-black tracking-widest text-white">FANCONNECTPRO</span>
           </div>
           <h1 className="text-3xl font-black text-white mb-2">Create account</h1>
           <p className="text-[#A0A0C0]">Join millions of fans on the premier celebrity platform</p>
@@ -46,7 +49,7 @@ export default function Register() {
         <div className="bg-[#13132A] border border-[rgba(124,58,237,0.25)] rounded-3xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm">
+              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm animate-shake">
                 {error}
               </div>
             )}
@@ -118,11 +121,11 @@ export default function Register() {
 
           <p className="mt-4 text-center text-[#6060A0] text-xs">
             By creating an account you agree to our{' '}
-            <span className="text-[#A78BFA] cursor-pointer">Terms of Service</span> and{' '}
-            <span className="text-[#A78BFA] cursor-pointer">Privacy Policy</span>
+            <Link to="/terms" className="text-[#A78BFA] hover:text-white transition-colors">Terms of Service</Link> and{' '}
+            <Link to="/privacy" className="text-[#A78BFA] hover:text-white transition-colors">Privacy Policy</Link>
           </p>
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

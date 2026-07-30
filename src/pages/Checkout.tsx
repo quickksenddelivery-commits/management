@@ -11,12 +11,15 @@ import { useApiData } from '../hooks/useApiData';
 import { formatDate, formatPrice } from '../lib/format';
 import { COINS, cartUsdTotal, toCrypto, formatCrypto, formatUSD, WHY_CRYPTO } from '../lib/crypto';
 import type { Coin } from '../lib/crypto';
+import { RevealGroup, RevealItem } from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 type Step = 'cart' | 'details' | 'payment' | 'success';
 
 const WHY_ICONS = [Globe, Zap, ShieldCheck, Lock];
 
 export default function Checkout() {
+  useSeo({ title: 'Checkout', description: 'Complete your booking on FanConnectPro.', index: false, path: '/checkout' });
   const navigate = useNavigate();
   const { user, cart, removeFromCart, updateQty, clearCart } = useStore();
   const [name, setName] = useState(user?.name ?? '');
@@ -94,7 +97,7 @@ export default function Checkout() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4 pt-24 pb-16">
         <div className="text-center max-w-md">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 ${
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 animate-scale-in ${
             pending ? 'bg-amber-500/20 border-amber-500/50' : 'bg-emerald-500/20 border-emerald-500/50'
           }`}>
             <CheckCircle size={40} className={pending ? 'text-amber-400' : 'text-emerald-400'} />
@@ -167,7 +170,7 @@ export default function Checkout() {
       <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[rgba(124,58,237,0.1)] border border-[rgba(124,58,237,0.3)] mb-8">
         <Wallet size={18} className="text-[#A78BFA] shrink-0" />
         <p className="text-[#A0A0C0] text-sm">
-          <span className="text-white font-semibold">All payments on Rachead are made in cryptocurrency</span>
+          <span className="text-white font-semibold">All payments on FanConnectPro are made in cryptocurrency</span>
           {' '}— borderless, low-fee, and fraud-proof. Pay with USDT, USDC, BTC, ETH or BNB.
         </p>
       </div>
@@ -198,8 +201,9 @@ export default function Checkout() {
           {step === 'cart' && (
             <div className="space-y-4">
               <h2 className="text-white font-bold text-lg mb-4">Cart Items</h2>
+              <RevealGroup className="space-y-4">
               {cart.map(item => (
-                <div key={`${item.eventId}-${item.tierId}`} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-4 flex gap-4">
+                <RevealItem key={`${item.eventId}-${item.tierId}`} y={10} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-4 flex gap-4">
                   <img src={item.eventImage} alt="" className="w-20 h-20 rounded-xl object-cover shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-bold text-sm truncate mb-1">{item.eventTitle}</p>
@@ -217,8 +221,9 @@ export default function Checkout() {
                   <button onClick={() => removeFromCart(item.eventId, item.tierId)} className="text-[#6060A0] hover:text-[#EF4444] transition-colors shrink-0">
                     <Trash2 size={16} />
                   </button>
-                </div>
+                </RevealItem>
               ))}
+              </RevealGroup>
               <div className="flex justify-between mt-2">
                 <button onClick={clearCart} className="text-[#EF4444] text-sm hover:text-red-300 transition-colors">Clear cart</button>
                 <button onClick={goToDetails} className="accent-btn flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold">
@@ -357,11 +362,11 @@ export default function Checkout() {
                   <Wallet size={15} className="text-[#A78BFA]" />
                   <h3 className="text-white font-bold text-sm">Why payments are made in crypto</h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {WHY_CRYPTO.map((r, i) => {
                     const Icon = WHY_ICONS[i] ?? Globe;
                     return (
-                      <div key={r.title} className="flex items-start gap-3">
+                      <RevealItem key={r.title} y={10} className="flex items-start gap-3">
                         <span className="w-8 h-8 rounded-lg bg-[rgba(124,58,237,0.12)] border border-[rgba(124,58,237,0.25)] flex items-center justify-center shrink-0">
                           <Icon size={15} className="text-[#A78BFA]" />
                         </span>
@@ -369,14 +374,14 @@ export default function Checkout() {
                           <p className="text-white text-sm font-semibold leading-tight">{r.title}</p>
                           <p className="text-[#A0A0C0] text-xs leading-snug mt-0.5">{r.body}</p>
                         </div>
-                      </div>
+                      </RevealItem>
                     );
                   })}
-                </div>
+                </RevealGroup>
               </div>
 
               {orderError && (
-                <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm">
+                <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm animate-shake">
                   {orderError}
                 </div>
               )}

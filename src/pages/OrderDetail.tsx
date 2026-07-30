@@ -7,6 +7,8 @@ import {
 import { api, ApiError } from '../lib/api';
 import type { Order } from '../lib/api';
 import { formatDate, formatPrice } from '../lib/format';
+import { RevealGroup, RevealItem } from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 const STATUS_STYLES: Record<string, string> = {
   pending:   'bg-amber-500/15 text-amber-300 border-amber-500/30',
@@ -16,6 +18,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function OrderDetail() {
+  useSeo({ title: 'Order Details', description: 'View your order details on FanConnectPro.', index: false });
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -178,7 +181,7 @@ export default function OrderDetail() {
               />
             </div>
             {confirmError && (
-              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm">
+              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm animate-shake">
                 {confirmError}
               </div>
             )}
@@ -213,9 +216,9 @@ export default function OrderDetail() {
           <Receipt size={16} className="text-[#A78BFA]" />
           <h3 className="text-white font-bold">Items ({order.items.length})</h3>
         </div>
-        <div className="space-y-3">
+        <RevealGroup className="space-y-3">
           {order.items.map((item, i) => (
-            <div key={i} className="flex items-start gap-3 pb-3 border-b border-[rgba(124,58,237,0.12)] last:border-0 last:pb-0">
+            <RevealItem key={i} y={10} className="flex items-start gap-3 pb-3 border-b border-[rgba(124,58,237,0.12)] last:border-0 last:pb-0">
               {item.eventImage && (
                 <img src={item.eventImage} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
               )}
@@ -230,27 +233,27 @@ export default function OrderDetail() {
                 <p className="text-white font-bold text-sm">× {item.quantity}</p>
                 <p className="text-[#6060A0] text-xs">{formatPrice(item.price * item.quantity, item.currency)}</p>
               </div>
-            </div>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
       </div>
 
       {/* ── Attendee + Payment summary ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
+      <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <RevealItem className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
           <p className="text-[#6060A0] text-xs uppercase tracking-wider mb-2">Attendee</p>
           <p className="text-white font-semibold">{order.attendee.name}</p>
           <p className="text-[#A0A0C0] text-sm">{order.attendee.email}</p>
-        </div>
-        <div className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
+        </RevealItem>
+        <RevealItem className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-5">
           <p className="text-[#6060A0] text-xs uppercase tracking-wider mb-2">Total</p>
           <p className="text-white font-black text-xl">{order.cryptoAmount} {order.coin.symbol}</p>
           <p className="text-[#A0A0C0] text-sm">
             ≈ ${order.usdTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             {' '}· <span className="text-[#A78BFA]">{order.coin.network}</span>
           </p>
-        </div>
-      </div>
+        </RevealItem>
+      </RevealGroup>
 
       {order.txHash && (
         <div className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl p-5 mb-6">

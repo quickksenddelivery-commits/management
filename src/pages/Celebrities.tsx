@@ -1,14 +1,23 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import CelebrityCard from '../components/common/CelebrityCard';
+import { CelebrityCardSkeleton } from '../components/common/Skeleton';
+import { staggerDelay } from '../lib/animation';
 import { loadCelebrities } from '../lib/content';
-import { useApiData } from '../hooks/useApiData';
+import { useApiDataLoading } from '../hooks/useApiData';
 import type { Celebrity, CelebrityCategory } from '../types';
 import { CATEGORY_LABELS } from '../types';
+import Reveal from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 const ALL_CATS: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer'];
 
 export default function Celebrities() {
+  useSeo({
+    title: 'Celebrities',
+    description: 'Discover verified musicians, DJs, comedians, actors, athletes, and influencers hosting events on FanConnectPro.',
+    path: '/celebrities',
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [category, setCategory] = useState<CelebrityCategory | ''>('');
@@ -23,7 +32,7 @@ export default function Celebrities() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  const celebrities = useApiData<Celebrity[]>(loadCelebrities, []);
+  const { data: celebrities, loading } = useApiDataLoading<Celebrity[]>(loadCelebrities, []);
 
   const filtered = useMemo(() =>
     celebrities.filter(c => {
@@ -36,11 +45,11 @@ export default function Celebrities() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
-      <div className="mb-10">
+      <Reveal className="mb-10">
         <p className="text-[#7C3AED] text-sm font-semibold tracking-widest uppercase mb-2">Discover</p>
         <h1 className="text-4xl font-black text-white mb-2">Celebrities</h1>
-        <p className="text-[#A0A0C0]">{filtered.length} celebrity profiles</p>
-      </div>
+        <p className="text-[#A0A0C0]">{loading ? 'Loading celebrities…' : `${filtered.length} celebrity profiles`}</p>
+      </Reveal>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
@@ -71,9 +80,23 @@ export default function Celebrities() {
         </div>
       </div>
 
-      {filtered.length > 0 ? (
+      {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {filtered.map(c => <CelebrityCard key={c.id} celebrity={c} />)}
+          {Array.from({ length: 12 }, (_, i) => <CelebrityCardSkeleton key={i} />)}
+        </div>
+      ) : filtered.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {filtered.map((c, i) => (
+            <div key={c.id} className="card-in" style={{ animationDelay: staggerDelay(i) }}>
+              <CelebrityCard celebrity={c} />
+            </div>
+          ))}
+        </div>
+      ) : celebrities.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-6xl mb-4">🌟</p>
+          <h3 className="text-white text-xl font-bold mb-2">No celebrities yet</h3>
+          <p className="text-[#A0A0C0]">Check back soon — new profiles are added regularly.</p>
         </div>
       ) : (
         <div className="text-center py-20">

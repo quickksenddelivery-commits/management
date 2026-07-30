@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X, Zap, User, LogOut } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useStore, useCartCount } from '../../store/useStore';
 
 export default function Navbar() {
@@ -12,6 +12,19 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useStore();
   const cartCount = useCartCount();
+
+  // Bump the cart icon whenever an item is added (count goes up).
+  const [cartBump, setCartBump] = useState(false);
+  const prevCartCount = useRef(cartCount);
+  useEffect(() => {
+    if (cartCount > prevCartCount.current) {
+      setCartBump(true);
+      const t = setTimeout(() => setCartBump(false), 400);
+      prevCartCount.current = cartCount;
+      return () => clearTimeout(t);
+    }
+    prevCartCount.current = cartCount;
+  }, [cartCount]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +76,7 @@ export default function Navbar() {
               <Zap size={17} className="text-white fill-white" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-base font-black tracking-[0.2em] text-white">RACHEAD</span>
+              <span className="text-base font-black tracking-[0.2em] text-white">FANCONNECTPRO</span>
               <span className="text-[8px] text-[#7C3AED] font-bold tracking-[0.15em] uppercase">Celebrity Events</span>
             </div>
           </Link>
@@ -89,9 +102,11 @@ export default function Navbar() {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
+              aria-label={searchOpen ? 'Close search' : 'Search'}
+              aria-expanded={searchOpen}
               className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
                 searchOpen ? 'bg-[rgba(124,58,237,0.2)] text-[#A78BFA]' : 'text-[#A0A0C0] hover:text-white hover:bg-white/6'
               }`}
@@ -101,9 +116,10 @@ export default function Navbar() {
 
             <Link
               to="/checkout"
+              aria-label={`View cart${cartCount > 0 ? ` (${cartCount} item${cartCount > 1 ? 's' : ''})` : ''}`}
               className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[#A0A0C0] hover:text-white hover:bg-white/6 transition-all"
             >
-              <ShoppingCart size={17} />
+              <ShoppingCart size={17} className={cartBump ? 'animate-cart-bump' : ''} />
               {cartCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#7C3AED] rounded-full flex items-center justify-center text-white text-[10px] font-black px-1 shadow-[0_0_8px_rgba(124,58,237,0.6)]">
                   {cartCount}
@@ -122,6 +138,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
+                  aria-label="Sign out"
                   className="w-9 h-9 flex items-center justify-center rounded-lg text-[#A0A0C0] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] transition-all"
                   title="Sign out"
                 >
@@ -140,6 +157,8 @@ export default function Navbar() {
             <button
               className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-[#A0A0C0] hover:text-white"
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -148,7 +167,7 @@ export default function Navbar() {
 
         {/* Search bar */}
         {searchOpen && (
-          <form onSubmit={handleSearch} className="pb-3 animate-fade-in">
+          <form onSubmit={handleSearch} className="pb-3 animate-menu-drop">
             <input
               type="text"
               value={searchQuery}
@@ -162,7 +181,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 border-t border-[rgba(124,58,237,0.15)] pt-3 space-y-1 animate-fade-in">
+          <div className="md:hidden pb-4 border-t border-[rgba(124,58,237,0.15)] pt-3 space-y-1 animate-menu-drop">
             {links.map(link => (
               <Link
                 key={link.to}

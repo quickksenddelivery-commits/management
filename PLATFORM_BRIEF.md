@@ -1,4 +1,4 @@
-# Rachead — Event Platform Planning Brief
+# FanConnectPro — Event Platform Planning Brief
 
 > Vision: A premium celebrity event platform combining Eventbrite, Ticketmaster, and fan experience.
 

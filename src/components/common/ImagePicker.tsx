@@ -156,7 +156,7 @@ export default function ImagePicker({
       )}
 
       {error && (
-        <div className="mt-2 px-3 py-2 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-xs flex items-start gap-1.5">
+        <div className="mt-2 px-3 py-2 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-xs flex items-start gap-1.5 animate-shake">
           <AlertCircle size={12} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>

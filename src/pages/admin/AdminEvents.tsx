@@ -114,10 +114,11 @@ export default function AdminEvents() {
                           to={`/admin/events/${ev.id}/edit`}
                           className="p-2 rounded-lg bg-[rgba(124,58,237,0.12)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.22)] transition-all"
                           title="Edit"
+                          aria-label={`Edit ${ev.title}`}
                         >
                           <Pencil size={14} />
                         </Link>
-                        <button onClick={() => handleDelete(ev.id, ev.title)} className="p-2 rounded-lg bg-[rgba(239,68,68,0.1)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.2)] transition-all" title="Delete">
+                        <button onClick={() => handleDelete(ev.id, ev.title)} className="p-2 rounded-lg bg-[rgba(239,68,68,0.1)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.2)] transition-all" title="Delete" aria-label={`Delete ${ev.title}`}>
                           <Trash2 size={14} />
                         </button>
                       </div>

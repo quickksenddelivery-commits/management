@@ -33,7 +33,7 @@ export default function AppLoader() {
           className="text-5xl sm:text-6xl font-black tracking-[0.25em] text-white mb-2 animate-fade-in-up"
           style={{ animationDelay: '0.15s' }}
         >
-          RACHEAD
+          FANCONNECTPRO
         </h1>
         <p
           className="text-[#A78BFA] text-xs font-bold tracking-[0.3em] uppercase mb-12 animate-fade-in-up"

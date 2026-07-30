@@ -4,8 +4,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User as UserIcon, ArrowLeft, Check } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import ImagePicker from '../components/common/ImagePicker';
+import Reveal from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 export default function Profile() {
+  useSeo({ title: 'Edit Profile', description: 'Update your FanConnectPro profile.', index: false, path: '/profile' });
   const navigate = useNavigate();
   const { user, updateProfile } = useStore();
 
@@ -55,9 +58,10 @@ export default function Profile() {
       <div className="mb-8">
         <p className="text-[#7C3AED] text-xs font-bold tracking-widest uppercase mb-2">Account</p>
         <h1 className="text-3xl font-black text-white">Edit Profile</h1>
-        <p className="text-[#A0A0C0] text-sm mt-1">Update how you appear on Rachead.</p>
+        <p className="text-[#A0A0C0] text-sm mt-1">Update how you appear on FanConnectPro.</p>
       </div>
 
+      <Reveal>
       <form onSubmit={handleSubmit} className="bg-[#13132A] border border-[rgba(124,58,237,0.25)] rounded-3xl p-6 sm:p-8 space-y-6">
         {/* Avatar preview */}
         <div className="flex items-center gap-5">
@@ -80,7 +84,7 @@ export default function Profile() {
         </div>
 
         {error && (
-          <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm">
+          <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm animate-shake">
             {error}
           </div>
         )}
@@ -121,10 +125,11 @@ export default function Profile() {
               loading ? 'bg-[#7C3AED]/50 cursor-wait' : saved ? 'bg-emerald-600' : 'accent-btn'
             }`}
           >
-            {saved ? <><Check size={16} /> Saved</> : loading ? 'Saving…' : <><UserIcon size={15} /> Save Changes</>}
+            {saved ? <><Check size={16} className="animate-scale-in" /> Saved</> : loading ? 'Saving…' : <><UserIcon size={15} /> Save Changes</>}
           </button>
         </div>
       </form>
+      </Reveal>
     </div>
   );
 }

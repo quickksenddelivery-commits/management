@@ -19,7 +19,7 @@ export default function Footer() {
                 <Zap size={18} className="text-white fill-white" />
               </div>
               <div>
-                <p className="text-base font-black tracking-[0.2em] text-white">RACHEAD</p>
+                <p className="text-base font-black tracking-[0.2em] text-white">FANCONNECTPRO</p>
                 <p className="text-[9px] text-[#7C3AED] font-bold tracking-[0.15em] uppercase">Celebrity Events</p>
               </div>
             </Link>
@@ -85,11 +85,22 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-black text-xs mb-5 tracking-[0.15em] uppercase">Company</h4>
             <ul className="space-y-3">
-              {['About Us', 'Contact', 'Privacy Policy', 'Terms of Service'].map(item => (
-                <li key={item}>
-                  <span className="text-[#6060A0] hover:text-[#A78BFA] text-sm transition-colors cursor-pointer">
-                    {item}
-                  </span>
+              {[
+                { label: 'About Us', to: null },
+                { label: 'Contact', to: null },
+                { label: 'Privacy Policy', to: '/privacy' },
+                { label: 'Terms of Service', to: '/terms' },
+              ].map(item => (
+                <li key={item.label}>
+                  {item.to ? (
+                    <Link to={item.to} className="text-[#6060A0] hover:text-[#A78BFA] text-sm transition-colors">
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className="text-[#6060A0] hover:text-[#A78BFA] text-sm transition-colors cursor-pointer">
+                      {item.label}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -121,7 +132,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[#6060A0] text-xs">
-            © 2026 <span className="text-[#A78BFA] font-semibold">RACHEAD</span>. All rights reserved.
+            © 2026 <span className="text-[#A78BFA] font-semibold">FANCONNECTPRO</span>. All rights reserved.
           </p>
           <p className="text-[#6060A0] text-xs">
             Built for <span className="text-[#A78BFA]">celebrities</span> and their fans worldwide.

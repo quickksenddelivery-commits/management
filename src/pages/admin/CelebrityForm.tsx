@@ -157,7 +157,7 @@ export default function CelebrityForm() {
 
       <form onSubmit={handleSubmit} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-3xl p-6 sm:p-8 space-y-5">
         {error && (
-          <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm flex items-start gap-2">
+          <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm flex items-start gap-2 animate-shake">
             <AlertCircle size={15} className="shrink-0 mt-0.5" /> {error}
           </div>
         )}

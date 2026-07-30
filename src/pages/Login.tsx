@@ -3,8 +3,11 @@ import type { FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Zap, Eye, EyeOff } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import Reveal from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 export default function Login() {
+  useSeo({ title: 'Sign In', description: 'Sign in to FanConnectPro to access your tickets and experiences.', path: '/login' });
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useStore();
@@ -38,14 +41,14 @@ export default function Login() {
       {/* Background glow */}
       <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#7C3AED]/8 blur-[120px] pointer-events-none" />
 
-      <div className="w-full max-w-md relative">
+      <Reveal className="w-full max-w-md relative" y={20}>
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-6">
             <div className="w-10 h-10 bg-[#7C3AED] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.5)]">
               <Zap size={20} className="text-white fill-white" />
             </div>
-            <span className="text-2xl font-black tracking-widest text-white">RACHEAD</span>
+            <span className="text-2xl font-black tracking-widest text-white">FANCONNECTPRO</span>
           </div>
           <h1 className="text-3xl font-black text-white mb-2">Welcome back</h1>
           <p className="text-[#A0A0C0]">Sign in to access your tickets and experiences</p>
@@ -54,7 +57,7 @@ export default function Login() {
         <div className="bg-[#13132A] border border-[rgba(124,58,237,0.25)] rounded-3xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm">
+              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm animate-shake">
                 {error}
               </div>
             )}
@@ -122,7 +125,7 @@ export default function Login() {
           </div>
 
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

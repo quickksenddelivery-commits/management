@@ -13,6 +13,8 @@ import { useStore } from '../store/useStore';
 import { SPONSOR_TIER_LABELS } from '../types';
 import type { SponsorTier, SponsorshipPackage, Sponsor, Event as EventType } from '../types';
 import { heroBackground, withFallback, eventPoster } from '../lib/images';
+import { RevealGroup, RevealItem } from '../components/motion/Reveal';
+import { useSeo } from '../components/seo/useSeo';
 
 const HERO_BG = heroBackground();
 
@@ -32,6 +34,11 @@ const REACH_STATS = [
 ];
 
 export default function Sponsorship() {
+  useSeo({
+    title: 'Sponsorship',
+    description: 'Sponsor celebrity events on FanConnectPro — reach millions of engaged fans with title, platinum, gold, silver, or community packages.',
+    path: '/sponsorship',
+  });
   const { submitSponsorship, user } = useStore();
   const formRef = useRef<HTMLDivElement>(null);
   const [params] = useSearchParams();
@@ -119,7 +126,7 @@ export default function Sponsorship() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
         <div className="max-w-lg w-full text-center">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500/50 flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500/50 flex items-center justify-center mx-auto mb-6 animate-scale-in">
             <CheckCircle size={40} className="text-emerald-400" />
           </div>
           <h1 className="text-3xl font-black text-white mb-3">Application Received!</h1>
@@ -181,7 +188,7 @@ export default function Sponsorship() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.1)] backdrop-blur-md mb-6">
               <Handshake size={14} className="text-[#F59E0B]" />
-              <span className="text-[#FCD34D] text-xs font-bold tracking-widest uppercase">Partner With Rachead</span>
+              <span className="text-[#FCD34D] text-xs font-bold tracking-widest uppercase">Partner With FanConnectPro</span>
             </div>
             <h1 className="font-black text-white leading-[0.98] tracking-tight mb-6" style={{ fontSize: 'clamp(2.6rem,6vw,5rem)' }}>
               Put Your Brand
@@ -253,17 +260,17 @@ export default function Sponsorship() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-[#7C3AED] text-xs font-bold tracking-widest uppercase mb-2">Why Sponsor</p>
           <h2 className="text-center text-3xl font-black text-white mb-12">A Stage In Front Of Millions</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <RevealGroup className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {REACH_STATS.map(({ icon: Icon, value, label }) => (
-              <div key={label} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-6 text-center">
+              <RevealItem key={label} className="bg-[#13132A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-6 text-center">
                 <div className="w-12 h-12 rounded-xl bg-[rgba(124,58,237,0.12)] border border-[rgba(124,58,237,0.3)] flex items-center justify-center mx-auto mb-4">
                   <Icon size={22} className="text-[#A78BFA]" />
                 </div>
                 <p className="text-3xl font-black gradient-text mb-1">{value}</p>
                 <p className="text-[#A0A0C0] text-sm leading-snug">{label}</p>
-              </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealGroup>
         </div>
       </section>
 
@@ -276,12 +283,12 @@ export default function Sponsorship() {
             <p className="text-[#A0A0C0] max-w-xl mx-auto">Flexible tiers for every budget — from owning an entire event to joining as a community partner.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <RevealGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {packages.map(pkg => {
               const t = TIER_THEME[pkg.tier];
               const soldOut = pkg.slotsAvailable === 0;
               return (
-                <div
+                <RevealItem
                   key={pkg.id}
                   className={`relative bg-[#13132A] rounded-2xl border ${t.ring} ${t.glow} p-6 flex flex-col ${pkg.tier === 'title' ? 'lg:col-span-3 lg:flex-row lg:items-center lg:gap-8' : ''}`}
                 >
@@ -337,10 +344,10 @@ export default function Sponsorship() {
                       {soldOut ? 'Fully Booked' : 'Choose ' + pkg.name}
                     </button>
                   </div>
-                </div>
+                </RevealItem>
               );
             })}
-          </div>
+          </RevealGroup>
         </div>
       </section>
 
@@ -352,32 +359,33 @@ export default function Sponsorship() {
             <h2 className="text-3xl font-black text-white">Sponsor A Specific Event</h2>
             <p className="text-[#A0A0C0] mt-2">Pick a flagship event to align your brand with — or sponsor the whole platform.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sponsorableEvents.slice(0, 6).map(ev => {
               const selected = form.eventId === ev.id;
               return (
-                <button
-                  key={ev.id}
-                  onClick={() => { setForm(f => ({ ...f, eventId: ev.id })); formRef.current?.scrollIntoView({ behavior: 'smooth' }); }}
-                  className={`text-left glow-card bg-[#13132A] rounded-2xl p-4 flex items-center gap-4 group ${selected ? 'border-[#F59E0B]/50 shadow-[0_0_24px_rgba(245,158,11,0.15)]' : ''}`}
-                >
-                  <img
-                    src={ev.image}
-                    alt=""
-                    {...withFallback(ev._imageFallback ?? eventPoster(ev.title, ev.category))}
-                    className="w-16 h-16 rounded-xl object-cover shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-white font-bold text-sm truncate group-hover:text-[#A78BFA] transition-colors">{ev.title}</p>
-                    <p className="text-[#6060A0] text-xs">{ev.city} · {ev.country}</p>
-                    <span className={`inline-block mt-1.5 text-xs font-semibold ${selected ? 'text-[#FCD34D]' : 'text-[#A78BFA]'}`}>
-                      {selected ? '✓ Selected' : 'Sponsor this event →'}
-                    </span>
-                  </div>
-                </button>
+                <RevealItem key={ev.id}>
+                  <button
+                    onClick={() => { setForm(f => ({ ...f, eventId: ev.id })); formRef.current?.scrollIntoView({ behavior: 'smooth' }); }}
+                    className={`w-full text-left glow-card bg-[#13132A] rounded-2xl p-4 flex items-center gap-4 group ${selected ? 'border-[#F59E0B]/50 shadow-[0_0_24px_rgba(245,158,11,0.15)]' : ''}`}
+                  >
+                    <img
+                      src={ev.image}
+                      alt=""
+                      {...withFallback(ev._imageFallback ?? eventPoster(ev.title, ev.category))}
+                      className="w-16 h-16 rounded-xl object-cover shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-white font-bold text-sm truncate group-hover:text-[#A78BFA] transition-colors">{ev.title}</p>
+                      <p className="text-[#6060A0] text-xs">{ev.city} · {ev.country}</p>
+                      <span className={`inline-block mt-1.5 text-xs font-semibold ${selected ? 'text-[#FCD34D]' : 'text-[#A78BFA]'}`}>
+                        {selected ? '✓ Selected' : 'Sponsor this event →'}
+                      </span>
+                    </div>
+                  </button>
+                </RevealItem>
               );
             })}
-          </div>
+          </RevealGroup>
         </div>
       </section>
 
@@ -395,7 +403,7 @@ export default function Sponsorship() {
 
           <form onSubmit={handleSubmit} className="bg-[#13132A] border border-[rgba(124,58,237,0.25)] rounded-3xl p-6 sm:p-8 space-y-5">
             {error && (
-              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm">
+              <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] text-sm animate-shake">
                 {error}
               </div>
             )}
@@ -467,9 +475,9 @@ export default function Sponsorship() {
             <p className="text-[#7C3AED] text-xs font-bold tracking-widest uppercase">Trusted By</p>
           </div>
           <h2 className="text-center text-3xl font-black text-white mb-12">Our Partners & Sponsors</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <RevealGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {partners.map(s => (
-              <div key={s.id} className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-[rgba(124,58,237,0.35)] transition-all group">
+              <RevealItem key={s.id} y={16} className="bg-[#13132A] border border-[rgba(124,58,237,0.15)] rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:border-[rgba(124,58,237,0.35)] transition-all group">
                 <img src={s.logo} alt={s.name} className="h-7 object-contain opacity-75 group-hover:opacity-100 transition-opacity" />
                 <div className="text-center">
                   <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${TIER_THEME[s.tier].chip}`}>
@@ -477,9 +485,9 @@ export default function Sponsorship() {
                   </span>
                   <p className="text-[#6060A0] text-[10px] mt-1.5">{s.industry}</p>
                 </div>
-              </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealGroup>
         </div>
       </section>
     </div>
