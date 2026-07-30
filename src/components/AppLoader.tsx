@@ -30,13 +30,13 @@ export default function AppLoader() {
 
         {/* Wordmark */}
         <h1
-          className="text-5xl sm:text-6xl font-black tracking-[0.25em] text-white mb-2 animate-fade-in-up"
+          className="text-2xl sm:text-4xl lg:text-6xl font-black tracking-[0.05em] sm:tracking-[0.18em] lg:tracking-[0.25em] text-white mb-2 animate-fade-in-up whitespace-nowrap"
           style={{ animationDelay: '0.15s' }}
         >
           FANCONNECTPRO
         </h1>
         <p
-          className="text-[#A78BFA] text-xs font-bold tracking-[0.3em] uppercase mb-12 animate-fade-in-up"
+          className="text-[#A78BFA] text-xs font-bold tracking-[0.15em] sm:tracking-[0.3em] uppercase mb-12 animate-fade-in-up whitespace-nowrap"
           style={{ animationDelay: '0.3s' }}
         >
           Celebrity Events Platform
@@ -44,7 +44,7 @@ export default function AppLoader() {
 
         {/* Progress bar */}
         <div
-          className="w-64 sm:w-80 animate-fade-in-up"
+          className="w-56 sm:w-80 animate-fade-in-up"
           style={{ animationDelay: '0.45s' }}
         >
           <div className="h-1 bg-[#1C1C3A] rounded-full overflow-hidden">

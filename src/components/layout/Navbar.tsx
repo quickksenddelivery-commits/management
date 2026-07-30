@@ -71,13 +71,13 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 sm:h-18">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-9 h-9 bg-[#7C3AED] rounded-xl flex items-center justify-center shadow-[0_0_16px_rgba(124,58,237,0.55)] group-hover:shadow-[0_0_24px_rgba(124,58,237,0.75)] transition-shadow duration-300">
-              <Zap size={17} className="text-white fill-white" />
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0 group">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 bg-[#7C3AED] rounded-xl flex items-center justify-center shadow-[0_0_16px_rgba(124,58,237,0.55)] group-hover:shadow-[0_0_24px_rgba(124,58,237,0.75)] transition-shadow duration-300">
+              <Zap size={16} className="text-white fill-white" />
             </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-base font-black tracking-[0.2em] text-white">FANCONNECTPRO</span>
-              <span className="text-[8px] text-[#7C3AED] font-bold tracking-[0.15em] uppercase">Celebrity Events</span>
+            <div className="flex flex-col leading-none min-w-0">
+              <span className="text-xs tracking-tight sm:text-base sm:tracking-[0.2em] font-black text-white whitespace-nowrap">FANCONNECTPRO</span>
+              <span className="hidden sm:block text-[8px] text-[#7C3AED] font-bold tracking-[0.15em] uppercase">Celebrity Events</span>
             </div>
           </Link>
 
@@ -107,7 +107,7 @@ export default function Navbar() {
               onClick={() => setSearchOpen(!searchOpen)}
               aria-label={searchOpen ? 'Close search' : 'Search'}
               aria-expanded={searchOpen}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-all ${
                 searchOpen ? 'bg-[rgba(124,58,237,0.2)] text-[#A78BFA]' : 'text-[#A0A0C0] hover:text-white hover:bg-white/6'
               }`}
             >
@@ -117,7 +117,7 @@ export default function Navbar() {
             <Link
               to="/checkout"
               aria-label={`View cart${cartCount > 0 ? ` (${cartCount} item${cartCount > 1 ? 's' : ''})` : ''}`}
-              className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[#A0A0C0] hover:text-white hover:bg-white/6 transition-all"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg text-[#A0A0C0] hover:text-white hover:bg-white/6 transition-all"
             >
               <ShoppingCart size={17} className={cartBump ? 'animate-cart-bump' : ''} />
               {cartCount > 0 && (
@@ -155,19 +155,19 @@ export default function Navbar() {
             )}
 
             <button
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-[#A0A0C0] hover:text-white"
+              className="md:hidden w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg text-[#A0A0C0] hover:text-white"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileOpen}
             >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              {mobileOpen ? <X size={19} /> : <Menu size={19} />}
             </button>
           </div>
         </div>
 
         {/* Search bar */}
         {searchOpen && (
-          <form onSubmit={handleSearch} className="pb-3 animate-menu-drop">
+          <form onSubmit={handleSearch} className="pb-3 bg-[#0D0D1A]/98 backdrop-blur-2xl animate-menu-drop">
             <input
               type="text"
               value={searchQuery}
@@ -181,7 +181,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 border-t border-[rgba(124,58,237,0.15)] pt-3 space-y-1 animate-menu-drop">
+          <div className="md:hidden pb-4 border-t border-[rgba(124,58,237,0.15)] bg-[#0D0D1A]/98 backdrop-blur-2xl pt-3 space-y-1 animate-menu-drop shadow-[0_16px_32px_rgba(0,0,0,0.4)]">
             {links.map(link => (
               <Link
                 key={link.to}
