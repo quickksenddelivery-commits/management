@@ -13,13 +13,13 @@ import Reveal from '../components/motion/Reveal';
 import { useSeo } from '../components/seo/useSeo';
 
 const ALL_CATEGORIES: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer'];
-const ALL_COUNTRIES = ['Nigeria', 'South Africa', 'Kenya', 'Ghana', 'United Kingdom'];
+const ALL_COUNTRIES = ['United States', 'United Kingdom', 'Canada', 'Australia'];
 const ALL_STATUSES = ['upcoming', 'live', 'sold_out'] as const;
 
 export default function Events() {
   useSeo({
     title: 'Browse Events',
-    description: 'Find concerts, VIP experiences, and meet-and-greets from your favorite celebrities across Africa, the UK, and beyond.',
+    description: 'Find concerts, VIP experiences, and meet-and-greets from your favorite celebrities across the US, UK, and beyond.',
     path: '/events',
   });
   const [searchParams, setSearchParams] = useSearchParams();

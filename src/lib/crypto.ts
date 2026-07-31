@@ -29,11 +29,9 @@ export const COINS: Coin[] = [
 /** 1 unit of fiat = X USD (indicative) */
 const FIAT_USD: Record<string, number> = {
   USD: 1,
-  NGN: 1 / 1600,
-  ZAR: 1 / 18,
   GBP: 1.27,
-  KES: 1 / 130,
-  GHS: 1 / 15,
+  CAD: 0.73,
+  AUD: 0.66,
 };
 
 export const toUSD = (amount: number, currency: string) =>

@@ -71,9 +71,9 @@ const CATEGORIES: { label: string; cat: CelebrityCategory; emoji: string }[] = [
 ];
 
 const TICKER_ITEMS = [
-  '⚡ The Crown Experience', '✦ Electric Nights Vol. 3', '★ Afrobeats London',
-  '◈ Nairobi Soundwave', '✦ Lagos Comedy Festival', '★ Zara Musa Live in Accra',
-  '⚡ Full Moon Festival', '◈ DJ Spice World Tour', '✦ Meet & Greet Packages',
+  '⚡ The Crown Experience', '✦ Electric Nights Vol. 3', '★ Chase Everett Live at the O2',
+  '◈ Toronto Soundwave', '✦ New York Comedy Festival', '★ Zara Monroe Live in Miami',
+  '⚡ Full Moon Festival', '◈ Nova Chen World Tour', '✦ Meet & Greet Packages',
 ];
 
 const VIP_TIERS = [

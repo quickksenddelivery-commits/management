@@ -24,7 +24,6 @@
 
 5. Will the platform support:
    - only one country,
-   - Africa only,
    - or worldwide events?
 
 6. Will there be:
@@ -94,7 +93,7 @@
 24. Should the platform support multiple currencies and payment gateways?
 
 25. Which payment gateways do you want?
-    - Stripe, Paystack, Flutterwave, PayPal?
+    - Stripe, PayPal, Adyen?
 
 ---
 

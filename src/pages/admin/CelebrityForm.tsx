@@ -214,7 +214,7 @@ export default function CelebrityForm() {
             <input type="text" value={form.nationality} onChange={(e) => set('nationality', e.target.value)} className={inputCls} />
           </Field>
           <Field label="Genre">
-            <input type="text" value={form.genre} onChange={(e) => set('genre', e.target.value)} placeholder="e.g. Afrobeats / R&B" className={inputCls} />
+            <input type="text" value={form.genre} onChange={(e) => set('genre', e.target.value)} placeholder="e.g. Pop / R&B" className={inputCls} />
           </Field>
           <Field label="Followers">
             <input type="number" min={0} value={form.followers} onChange={(e) => set('followers', Number(e.target.value))} className={inputCls} />
