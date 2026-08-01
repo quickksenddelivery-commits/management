@@ -13,6 +13,7 @@ import type { Event, Celebrity, CelebrityCategory, TierLevel } from '../../types
 const CATEGORIES: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer', 'pastor', 'politician'];
 const STATUSES = ['upcoming', 'live', 'past', 'sold_out'] as const;
 const TIER_LEVELS: TierLevel[] = ['general', 'vip', 'vvip', 'meetgreet'];
+const TIER_LEVEL_LABELS: Record<TierLevel, string> = { general: 'General', vip: 'Top Fan', vvip: 'VVIP', meetgreet: 'Meet & Greet' };
 
 interface TierFormData {
   name: string;
@@ -341,7 +342,7 @@ export default function EventForm() {
                   </Field>
                   <Field label="Tier level">
                     <select value={t.tier} onChange={(e) => setTier(i, 'tier', e.target.value as TierLevel)} className={inputCls}>
-                      {TIER_LEVELS.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}
+                      {TIER_LEVELS.map((lvl) => <option key={lvl} value={lvl}>{TIER_LEVEL_LABELS[lvl]}</option>)}
                     </select>
                   </Field>
                   <Field label="Currency">
@@ -358,7 +359,7 @@ export default function EventForm() {
                   </Field>
                   <div className="col-span-2 sm:col-span-3">
                     <Field label="Perks (comma-separated)">
-                      <input type="text" value={t.perks} onChange={(e) => setTier(i, 'perks', e.target.value)} placeholder="e.g. VIP lounge, Dedicated entrance" className={inputCls} />
+                      <input type="text" value={t.perks} onChange={(e) => setTier(i, 'perks', e.target.value)} placeholder="e.g. Top Fan lounge, Dedicated entrance" className={inputCls} />
                     </Field>
                   </div>
                 </div>

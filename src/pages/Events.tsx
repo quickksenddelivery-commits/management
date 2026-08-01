@@ -19,7 +19,7 @@ const ALL_STATUSES = ['upcoming', 'live', 'sold_out'] as const;
 export default function Events() {
   useSeo({
     title: 'Browse Events',
-    description: 'Find concerts, VIP experiences, and meet-and-greets from your favorite celebrities across the US, UK, and beyond.',
+    description: 'Find concerts, Top Fan experiences, and meet-and-greets from your favorite celebrities across the US, UK, and beyond.',
     path: '/events',
   });
   const [searchParams, setSearchParams] = useSearchParams();

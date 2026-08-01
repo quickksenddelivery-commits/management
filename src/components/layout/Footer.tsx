@@ -24,7 +24,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-[#6060A0] text-sm leading-relaxed mb-6 max-w-xs">
-              The world's premier platform for celebrity events, VIP experiences, and unforgettable live moments.
+              The world's premier platform for celebrity events, Top Fan experiences, and unforgettable live moments.
             </p>
             <div className="flex items-center gap-3">
               {[

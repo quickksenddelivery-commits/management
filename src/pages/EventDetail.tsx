@@ -13,7 +13,7 @@ import EventCard from '../components/common/EventCard';
 import Reveal, { RevealGroup, RevealItem } from '../components/motion/Reveal';
 import { useSeo } from '../components/seo/useSeo';
 
-const TIER_LABELS = { general: 'General', vip: '⭐ VIP', vvip: '👑 VVIP', meetgreet: '🤝 Meet & Greet' };
+const TIER_LABELS = { general: 'General', vip: '⭐ Top Fan', vvip: '👑 VVIP', meetgreet: '🤝 Meet & Greet' };
 const TIER_BG = {
   general: 'bg-[#13132A]',
   vip: 'bg-gradient-to-br from-[#1C1A10] to-[#13132A]',

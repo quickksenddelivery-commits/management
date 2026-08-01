@@ -77,7 +77,7 @@ const TICKER_ITEMS = [
 ];
 
 const VIP_TIERS = [
-  { icon: Star, name: 'VIP Section', desc: 'Premium seating with complimentary drinks and a dedicated entrance.', color: 'text-[#A78BFA]', bg: 'bg-[rgba(124,58,237,0.1)]', border: 'border-[rgba(124,58,237,0.3)]' },
+  { icon: Star, name: 'Top Fan Section', desc: 'Premium seating with complimentary drinks and a dedicated entrance.', color: 'text-[#A78BFA]', bg: 'bg-[rgba(124,58,237,0.1)]', border: 'border-[rgba(124,58,237,0.3)]' },
   { icon: Crown, name: 'VVIP Table', desc: 'Private table with bottle service and the best view in the venue.', color: 'text-[#F59E0B]', bg: 'bg-[rgba(245,158,11,0.08)]', border: 'border-[rgba(245,158,11,0.35)]' },
   { icon: Zap, name: 'Meet & Greet', desc: 'Personal meet with the celebrity, signed merch, and a photo session.', color: 'text-[#FCD34D]', bg: 'bg-[rgba(252,211,77,0.08)]', border: 'border-[rgba(252,211,77,0.3)]' },
 ];
@@ -104,7 +104,7 @@ export default function Home() {
   useScrollReveal();
   useSeo({
     title: 'FanConnectPro',
-    description: 'Book exclusive tickets to concerts, VIP tables, backstage access and meet-and-greets with the biggest celebrities in entertainment. All payments settle in crypto.',
+    description: 'Book exclusive tickets to concerts, Top Fan tables, backstage access and meet-and-greets with the biggest celebrities in entertainment. All payments settle in crypto.',
     path: '/',
   });
 
@@ -209,7 +209,7 @@ export default function Home() {
               className="text-[#A0A0C0] text-lg leading-relaxed max-w-xl mb-10 animate-fade-in-up"
               style={{ animationDelay: '.35s' }}
             >
-              Book exclusive tickets to concerts, VIP tables, backstage access, and
+              Book exclusive tickets to concerts, Top Fan tables, backstage access, and
               meet-and-greets with the biggest names in entertainment.
             </p>
 
@@ -406,7 +406,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════ VIP EXPERIENCES ════════════ */}
+      {/* ════════════ TOP FAN EXPERIENCES ════════════ */}
       <section className="py-20 section-fade overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
@@ -416,10 +416,10 @@ export default function Home() {
               <span className="text-[#F59E0B] text-xs font-bold tracking-widest uppercase">Exclusive Access</span>
             </div>
             <h2 className="text-4xl font-black text-white mb-4">
-              VIP <span className="gradient-text-gold">Experiences</span>
+              Top Fan <span className="gradient-text-gold">Experiences</span>
             </h2>
             <p className="text-[#A0A0C0] max-w-lg mx-auto">
-              Go beyond standard admission. Get closer to the artists you love with our exclusive VIP packages.
+              Go beyond standard admission. Get closer to the artists you love with our exclusive Top Fan packages.
             </p>
           </div>
 
@@ -436,7 +436,7 @@ export default function Home() {
             ))}
           </RevealGroup>
 
-          {/* Featured VIP CTA */}
+          {/* Featured Top Fan CTA */}
           {vipEvent && vipTier && (
             <div className="relative rounded-3xl overflow-hidden gold-card p-8 sm:p-12">
               {/* Glow orb */}
@@ -473,7 +473,7 @@ export default function Home() {
                   </div>
 
                   <Link to={`/events/${vipEvent.id}`} className="gold-btn inline-flex items-center gap-2 px-7 py-4 rounded-xl font-bold">
-                    Book VIP Experience <Crown size={16} />
+                    Book Top Fan Experience <Crown size={16} />
                   </Link>
                 </div>
 
