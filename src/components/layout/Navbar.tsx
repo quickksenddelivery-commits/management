@@ -1,7 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Menu, X, Zap, User, LogOut } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, Zap, User, LogOut, Home, Calendar, Users, Handshake, Shield } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useStore, useCartCount } from '../../store/useStore';
+
+const LINK_ICONS: Record<string, typeof Home> = {
+  '/': Home, '/events': Calendar, '/celebrities': Users, '/sponsorship': Handshake, '/admin': Shield,
+};
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -180,31 +185,76 @@ export default function Navbar() {
         )}
 
         {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden pb-4 border-t border-[rgba(124,58,237,0.15)] bg-[#0D0D1A]/98 backdrop-blur-sm pt-3 space-y-1 animate-menu-drop shadow-[0_16px_32px_rgba(0,0,0,0.4)]">
-            {links.map(link => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`block px-4 py-3 rounded-xl text-sm font-semibold ${
-                  isActive(link.to)
-                    ? 'text-[#A78BFA] bg-[rgba(124,58,237,0.12)]'
-                    : 'text-[#A0A0C0] hover:text-white hover:bg-white/4'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            {user ? (
-              <>
-                <Link to="/dashboard" className="block px-4 py-3 rounded-xl text-sm font-semibold text-[#A0A0C0] hover:text-white">My Dashboard</Link>
-                <button onClick={handleLogout} className="block w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-[#EF4444]">Sign Out</button>
-              </>
-            ) : (
-              <Link to="/login" className="block px-4 py-3 mt-2 rounded-xl accent-btn text-white text-sm font-bold text-center">Sign In</Link>
-            )}
-          </div>
-        )}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="md:hidden overflow-hidden border-t border-[rgba(124,58,237,0.15)] bg-[#0D0D1A]/98 backdrop-blur-sm shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+            >
+              <nav className="pt-3 pb-2 px-2 space-y-1">
+                {links.map((link, i) => {
+                  const Icon = LINK_ICONS[link.to] ?? Home;
+                  const active = isActive(link.to);
+                  return (
+                    <motion.div
+                      key={link.to}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.2 }}
+                    >
+                      <Link
+                        to={link.to}
+                        className={`relative flex items-center gap-3 pl-4 pr-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                          active ? 'text-[#A78BFA] bg-[rgba(124,58,237,0.12)]' : 'text-[#A0A0C0] hover:text-white hover:bg-white/4'
+                        }`}
+                      >
+                        {active && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-[#7C3AED] shadow-[0_0_8px_rgba(124,58,237,0.6)]" />
+                        )}
+                        <Icon size={16} className={active ? 'text-[#A78BFA]' : 'text-[#6060A0]'} />
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </nav>
+
+              <div className="mx-2 mt-2 pt-3 pb-3 border-t border-[rgba(124,58,237,0.12)] px-2">
+                <p className="px-2 mb-2 text-[#6060A0] text-[10px] font-bold tracking-widest uppercase">Account</p>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-2 py-2 mb-1">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt="" className="w-9 h-9 rounded-xl object-cover border border-[rgba(124,58,237,0.3)] shrink-0" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-xl bg-[rgba(124,58,237,0.2)] border border-[rgba(124,58,237,0.3)] flex items-center justify-center text-sm font-black text-[#A78BFA] shrink-0">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-semibold truncate">{user.name}</p>
+                        <p className="text-[#6060A0] text-xs truncate">{user.email}</p>
+                      </div>
+                    </div>
+                    <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-[#A0A0C0] hover:text-white hover:bg-white/4 transition-all">
+                      <User size={16} className="text-[#6060A0]" /> My Dashboard
+                    </Link>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-[#EF4444] hover:bg-[rgba(239,68,68,0.08)] transition-all">
+                      <LogOut size={16} /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link to="/login" className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl accent-btn text-white text-sm font-bold">
+                    Sign In
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

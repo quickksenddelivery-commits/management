@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Zap, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Reveal from '../components/motion/Reveal';
 import { useSeo } from '../components/seo/useSeo';
@@ -36,12 +36,6 @@ export default function Register() {
 
       <Reveal className="w-full max-w-md relative" y={20}>
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 bg-[#7C3AED] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.5)]">
-              <Zap size={20} className="text-white fill-white" />
-            </div>
-            <span className="text-2xl font-black tracking-widest text-white">FANCONNECTPRO</span>
-          </div>
           <h1 className="text-3xl font-black text-white mb-2">Create account</h1>
           <p className="text-[#A0A0C0]">Join millions of fans on the premier celebrity platform</p>
         </div>
