@@ -19,6 +19,8 @@ import Terms from './pages/Terms';
 import Admin from './pages/admin/Admin';
 import EventForm from './pages/admin/EventForm';
 import CelebrityForm from './pages/admin/CelebrityForm';
+import { ToastProvider } from './components/ui/ToastProvider';
+import { ConfirmProvider } from './components/ui/ConfirmDialog';
 import { useStore } from './store/useStore';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -57,6 +59,8 @@ export default function App() {
 
   return (
     <div className="app-reveal">
+    <ToastProvider>
+    <ConfirmProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -83,6 +87,8 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </ConfirmProvider>
+    </ToastProvider>
     </div>
   );
 }

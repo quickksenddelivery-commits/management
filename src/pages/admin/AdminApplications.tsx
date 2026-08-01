@@ -3,6 +3,7 @@ import { Loader, AlertCircle, Mail, Phone, Building2, Calendar } from 'lucide-re
 import { api, ApiError } from '../../lib/api';
 import type { SponsorshipApplication } from '../../types';
 import { formatDate } from '../../lib/format';
+import { useToast } from '../../components/ui/ToastProvider';
 
 const STATUSES = ['pending', 'reviewing', 'approved'] as const;
 type Status = typeof STATUSES[number];
@@ -21,6 +22,7 @@ export default function AdminApplications() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | Status>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const toast = useToast();
 
   const load = async () => {
     setLoading(true); setError('');
@@ -39,8 +41,9 @@ export default function AdminApplications() {
     try {
       const updated = await api.sponsorship.updateApplication(id, status);
       setApps(apps.map(a => (a.id ?? (a as unknown as { _id: string })._id) === id ? updated : a));
+      toast.success(`Application status updated to "${status}".`);
     } catch (e) {
-      alert(`Update failed: ${e instanceof ApiError ? e.message : 'unknown error'}`);
+      toast.error(e instanceof ApiError ? e.message : 'Update failed — unknown error.');
     }
     setUpdatingId(null);
   };

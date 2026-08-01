@@ -4,6 +4,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Users, Save, AlertCircle, Loader, Trash2 } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
 import ImagePicker from '../../components/common/ImagePicker';
+import { useToast } from '../../components/ui/ToastProvider';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import type { Celebrity, CelebrityCategory } from '../../types';
 import { CATEGORY_LABELS } from '../../types';
 
@@ -50,6 +52,8 @@ export default function CelebrityForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [loadError, setLoadError] = useState('');
+  const toast = useToast();
+  const confirm = useConfirm();
 
   useEffect(() => {
     if (!isEdit || !id) return;
@@ -94,6 +98,7 @@ export default function CelebrityForm() {
       };
       if (isEdit && id) await api.celebrities.update(id, payload);
       else await api.celebrities.create(payload);
+      toast.success(isEdit ? 'Celebrity updated.' : 'Celebrity created.');
       navigate('/admin?tab=celebrities', { replace: true });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Save failed');
@@ -103,10 +108,17 @@ export default function CelebrityForm() {
 
   const handleDelete = async () => {
     if (!isEdit || !id) return;
-    if (!confirm(`Delete "${form.name}"? Events that reference this celebrity will keep the orphan id.`)) return;
+    const ok = await confirm({
+      title: `Delete ${form.name}?`,
+      description: "This can't be undone. If they still have events, delete those first.",
+      confirmLabel: 'Delete',
+      danger: true,
+    });
+    if (!ok) return;
     setSaving(true);
     try {
       await api.celebrities.remove(id);
+      toast.success('Celebrity deleted.');
       navigate('/admin?tab=celebrities', { replace: true });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Delete failed');

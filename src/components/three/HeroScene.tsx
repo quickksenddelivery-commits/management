@@ -1,6 +1,7 @@
 import { Suspense, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, MeshDistortMaterial, Sparkles } from '@react-three/drei';
+import { useInView } from 'motion/react';
 import type { Mesh } from 'three';
 
 /** Purple gem-core: slow idle spin + a gentle pull toward the cursor. */
@@ -61,7 +62,7 @@ function Scene() {
         <GoldRing />
       </Float>
 
-      <Sparkles count={60} scale={5} size={2.5} speed={0.3} color="#A78BFA" opacity={0.6} />
+      <Sparkles count={40} scale={5} size={2.5} speed={0.3} color="#A78BFA" opacity={0.6} />
     </>
   );
 }
@@ -70,18 +71,32 @@ function Scene() {
  * Real WebGL 3D centerpiece for the hero — a floating, distort-shaded gem
  * with an orbiting gold ring and ambient sparkles. Desktop-only (see caller);
  * capped DPR keeps it cheap on the GPU.
+ *
+ * The render loop is genuinely continuous (shader distortion, rotation,
+ * sparkles), so it's gated behind an IntersectionObserver: the <Canvas>
+ * only mounts while the hero is on screen, and unmounts (killing the WebGL
+ * context and its rAF loop entirely) once scrolled away — otherwise it
+ * keeps costing every frame for as long as the page is open, well after
+ * it's no longer visible.
  */
 export default function HeroScene() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(wrapperRef, { margin: '200px' });
+
   return (
-    <Canvas
-      camera={{ position: [0, 0, 5.5], fov: 45 }}
-      dpr={[1, 1.5]}
-      gl={{ alpha: true, antialias: true }}
-      style={{ background: 'transparent' }}
-    >
-      <Suspense fallback={null}>
-        <Scene />
-      </Suspense>
-    </Canvas>
+    <div ref={wrapperRef} className="w-full h-full">
+      {inView && (
+        <Canvas
+          camera={{ position: [0, 0, 5.5], fov: 45 }}
+          dpr={[1, 1.5]}
+          gl={{ alpha: true, antialias: true }}
+          style={{ background: 'transparent' }}
+        >
+          <Suspense fallback={null}>
+            <Scene />
+          </Suspense>
+        </Canvas>
+      )}
+    </div>
   );
 }

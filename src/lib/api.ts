@@ -17,6 +17,7 @@ import type {
   Celebrity,
   Event,
   Ticket,
+  TicketTier,
   User,
   SponsorshipPackage,
   Sponsor,
@@ -24,6 +25,9 @@ import type {
   SponsorTier,
   CelebrityCategory,
 } from '../types';
+
+/** Event create/update payload — ticket tiers have no `id` yet; the server generates one per tier. */
+export type EventInput = Partial<Omit<Event, 'ticketTiers'>> & { ticketTiers?: Omit<TicketTier, 'id'>[] };
 import type { Coin } from './crypto';
 
 /* ───────────────── Config ───────────────── */
@@ -327,11 +331,11 @@ const events = {
   },
 
   // Admin (admin secret is auto-attached from storage; pass adminSecret to override)
-  async create(payload: Partial<Event>, adminSecret?: string): Promise<Event> {
+  async create(payload: EventInput, adminSecret?: string): Promise<Event> {
     const r = await request<{ event: Event }>('/events', { method: 'POST', auth: true, admin: true, adminSecret, body: payload });
     return r.data!.event;
   },
-  async update(id: string, payload: Partial<Event>, adminSecret?: string): Promise<Event> {
+  async update(id: string, payload: EventInput, adminSecret?: string): Promise<Event> {
     const r = await request<{ event: Event }>(`/events/${id}`, { method: 'PATCH', auth: true, admin: true, adminSecret, body: payload });
     return r.data!.event;
   },

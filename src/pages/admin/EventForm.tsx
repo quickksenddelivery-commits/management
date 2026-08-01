@@ -1,14 +1,32 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Save, AlertCircle, Loader, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Save, AlertCircle, Loader, Trash2, Plus, Ticket } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
+import type { EventInput } from '../../lib/api';
 import { loadCelebrities } from '../../lib/content';
 import ImagePicker from '../../components/common/ImagePicker';
-import type { Event, Celebrity, CelebrityCategory } from '../../types';
+import { useToast } from '../../components/ui/ToastProvider';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
+import type { Event, Celebrity, CelebrityCategory, TierLevel } from '../../types';
 
 const CATEGORIES: CelebrityCategory[] = ['musician', 'dj', 'comedian', 'actor', 'athlete', 'influencer', 'pastor', 'politician'];
 const STATUSES = ['upcoming', 'live', 'past', 'sold_out'] as const;
+const TIER_LEVELS: TierLevel[] = ['general', 'vip', 'vvip', 'meetgreet'];
+
+interface TierFormData {
+  name: string;
+  tier: TierLevel;
+  price: string;
+  currency: string;
+  total: string;
+  available: string;
+  perks: string;
+}
+
+const emptyTier = (): TierFormData => ({
+  name: '', tier: 'general', price: '0', currency: 'USD', total: '100', available: '100', perks: '',
+});
 
 interface EventFormData {
   title: string;
@@ -23,12 +41,14 @@ interface EventFormData {
   description: string;
   status: typeof STATUSES[number];
   isFeatured: boolean;
+  ticketTiers: TierFormData[];
 }
 
 const emptyForm: EventFormData = {
   title: '', subtitle: '', celebrityId: '', category: 'musician',
   date: '', venue: '', city: '', country: '',
   image: '', description: '', status: 'upcoming', isFeatured: false,
+  ticketTiers: [emptyTier()],
 };
 
 function toFormData(ev: Event): EventFormData {
@@ -45,6 +65,17 @@ function toFormData(ev: Event): EventFormData {
     description: ev.description ?? '',
     status: ev.status,
     isFeatured: ev.isFeatured,
+    ticketTiers: ev.ticketTiers.length
+      ? ev.ticketTiers.map((t) => ({
+          name: t.name,
+          tier: t.tier,
+          price: String(t.price),
+          currency: t.currency,
+          total: String(t.total),
+          available: String(t.available),
+          perks: t.perks.join(', '),
+        }))
+      : [emptyTier()],
   };
 }
 
@@ -59,6 +90,8 @@ export default function EventForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [loadError, setLoadError] = useState('');
+  const toast = useToast();
+  const confirm = useConfirm();
 
   // Load celebrities for the dropdown + the event itself (edit mode)
   useEffect(() => {
@@ -87,16 +120,32 @@ export default function EventForm() {
   const set = <K extends keyof EventFormData>(k: K, v: EventFormData[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const setTier = <K extends keyof TierFormData>(index: number, k: K, v: TierFormData[K]) =>
+    setForm((f) => ({
+      ...f,
+      ticketTiers: f.ticketTiers.map((t, i) => (i === index ? { ...t, [k]: v } : t)),
+    }));
+
+  const addTier = () => setForm((f) => ({ ...f, ticketTiers: [...f.ticketTiers, emptyTier()] }));
+
+  const removeTier = (index: number) =>
+    setForm((f) => ({ ...f, ticketTiers: f.ticketTiers.filter((_, i) => i !== index) }));
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!form.title || !form.celebrityId || !form.venue || !form.city || !form.country || !form.image) {
-      setError('Title, celebrity, venue, city, country, and image URL are required.');
+    if (!form.title || !form.celebrityId || !form.date || !form.venue || !form.city || !form.country || !form.image) {
+      setError('Title, celebrity, date & time, venue, city, country, and image URL are required.');
+      return;
+    }
+    const validTiers = form.ticketTiers.filter((t) => t.name.trim());
+    if (validTiers.length === 0) {
+      setError('Add at least one ticket tier with a name — otherwise nobody can buy tickets to this event.');
       return;
     }
     setSaving(true);
     try {
-      const payload: Partial<Event> = {
+      const payload: EventInput = {
         title: form.title.trim(),
         subtitle: form.subtitle.trim() || undefined,
         celebrityId: form.celebrityId,
@@ -109,9 +158,19 @@ export default function EventForm() {
         description: form.description.trim(),
         status: form.status,
         isFeatured: form.isFeatured,
+        ticketTiers: validTiers.map((t) => ({
+          name: t.name.trim(),
+          tier: t.tier,
+          price: Number(t.price) || 0,
+          currency: t.currency.trim().toUpperCase() || 'USD',
+          total: Number(t.total) || 0,
+          available: Number(t.available) || 0,
+          perks: t.perks.split(',').map((p) => p.trim()).filter(Boolean),
+        })),
       };
       if (isEdit && id) await api.events.update(id, payload);
       else await api.events.create(payload);
+      toast.success(isEdit ? 'Event updated.' : 'Event created.');
       navigate('/admin?tab=events', { replace: true });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Save failed');
@@ -121,10 +180,17 @@ export default function EventForm() {
 
   const handleDelete = async () => {
     if (!isEdit || !id) return;
-    if (!confirm(`Delete "${form.title}"? This is permanent.`)) return;
+    const ok = await confirm({
+      title: `Delete ${form.title}?`,
+      description: 'This is permanent and cannot be undone.',
+      confirmLabel: 'Delete',
+      danger: true,
+    });
+    if (!ok) return;
     setSaving(true);
     try {
       await api.events.remove(id);
+      toast.success('Event deleted.');
       navigate('/admin?tab=events', { replace: true });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Delete failed');
@@ -198,8 +264,8 @@ export default function EventForm() {
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
-          <Field label="Date & time">
-            <input type="datetime-local" value={form.date} onChange={(e) => set('date', e.target.value)} className={inputCls} />
+          <Field label="Date & time *">
+            <input type="datetime-local" value={form.date} onChange={(e) => set('date', e.target.value)} className={inputCls} required />
           </Field>
           <Field label="Status">
             <select value={form.status} onChange={(e) => set('status', e.target.value as typeof STATUSES[number])} className={inputCls}>
@@ -235,6 +301,70 @@ export default function EventForm() {
             <input type="checkbox" checked={form.isFeatured} onChange={(e) => set('isFeatured', e.target.checked)} className="w-4 h-4 accent-[#7C3AED]" />
             <span className="text-[#A0A0C0] text-sm">Feature this event on the homepage</span>
           </label>
+        </div>
+
+        {/* Ticket tiers */}
+        <div className="pt-5 border-t border-[rgba(124,58,237,0.15)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Ticket size={16} className="text-[#A78BFA]" />
+              <h3 className="text-white font-bold text-sm">Ticket Tiers *</h3>
+            </div>
+            <button
+              type="button"
+              onClick={addTier}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[rgba(124,58,237,0.12)] border border-[rgba(124,58,237,0.3)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.22)] text-xs font-bold transition-all"
+            >
+              <Plus size={13} /> Add Tier
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {form.ticketTiers.map((t, i) => (
+              <div key={i} className="bg-[#1C1C3A] border border-[rgba(124,58,237,0.2)] rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[#6060A0] text-xs font-bold uppercase tracking-wider">Tier {i + 1}</span>
+                  {form.ticketTiers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTier(i)}
+                      className="text-[#EF4444] hover:text-red-300 transition-colors"
+                      aria-label={`Remove tier ${i + 1}`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <Field label="Name *">
+                    <input type="text" value={t.name} onChange={(e) => setTier(i, 'name', e.target.value)} placeholder="e.g. General" className={inputCls} />
+                  </Field>
+                  <Field label="Tier level">
+                    <select value={t.tier} onChange={(e) => setTier(i, 'tier', e.target.value as TierLevel)} className={inputCls}>
+                      {TIER_LEVELS.map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Currency">
+                    <input type="text" value={t.currency} onChange={(e) => setTier(i, 'currency', e.target.value.toUpperCase())} maxLength={3} className={inputCls} />
+                  </Field>
+                  <Field label="Price">
+                    <input type="number" min={0} step="0.01" value={t.price} onChange={(e) => setTier(i, 'price', e.target.value)} className={inputCls} />
+                  </Field>
+                  <Field label="Total seats">
+                    <input type="number" min={0} value={t.total} onChange={(e) => setTier(i, 'total', e.target.value)} className={inputCls} />
+                  </Field>
+                  <Field label="Available now">
+                    <input type="number" min={0} value={t.available} onChange={(e) => setTier(i, 'available', e.target.value)} className={inputCls} />
+                  </Field>
+                  <div className="col-span-2 sm:col-span-3">
+                    <Field label="Perks (comma-separated)">
+                      <input type="text" value={t.perks} onChange={(e) => setTier(i, 'perks', e.target.value)} placeholder="e.g. VIP lounge, Dedicated entrance" className={inputCls} />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 pt-5 border-t border-[rgba(124,58,237,0.15)]">

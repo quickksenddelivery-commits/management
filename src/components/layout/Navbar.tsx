@@ -63,7 +63,7 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-[#0D0D1A]/92 backdrop-blur-2xl border-b border-[rgba(124,58,237,0.25)] shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+          ? 'bg-[#0D0D1A]/92 backdrop-blur-sm border-b border-[rgba(124,58,237,0.25)] shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
@@ -167,7 +167,7 @@ export default function Navbar() {
 
         {/* Search bar */}
         {searchOpen && (
-          <form onSubmit={handleSearch} className="pb-3 bg-[#0D0D1A]/98 backdrop-blur-2xl animate-menu-drop">
+          <form onSubmit={handleSearch} className="pb-3 bg-[#0D0D1A]/98 backdrop-blur-sm animate-menu-drop">
             <input
               type="text"
               value={searchQuery}
@@ -181,7 +181,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 border-t border-[rgba(124,58,237,0.15)] bg-[#0D0D1A]/98 backdrop-blur-2xl pt-3 space-y-1 animate-menu-drop shadow-[0_16px_32px_rgba(0,0,0,0.4)]">
+          <div className="md:hidden pb-4 border-t border-[rgba(124,58,237,0.15)] bg-[#0D0D1A]/98 backdrop-blur-sm pt-3 space-y-1 animate-menu-drop shadow-[0_16px_32px_rgba(0,0,0,0.4)]">
             {links.map(link => (
               <Link
                 key={link.to}

@@ -5,12 +5,14 @@ import { Zap, Eye, EyeOff } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Reveal from '../components/motion/Reveal';
 import { useSeo } from '../components/seo/useSeo';
+import { useToast } from '../components/ui/ToastProvider';
 
 export default function Login() {
   useSeo({ title: 'Sign In', description: 'Sign in to FanConnectPro to access your tickets and experiences.', path: '/login' });
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useStore();
+  const toast = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -79,7 +81,7 @@ export default function Login() {
                 <label className="block text-[#A0A0C0] text-sm font-medium">Password</label>
                 <button
                   type="button"
-                  onClick={() => alert('Password reset is coming in Stage 2. For now, contact support to reset your password.')}
+                  onClick={() => toast.info('Password reset is coming in Stage 2. For now, contact support to reset your password.')}
                   className="text-[#A78BFA] hover:text-white text-xs font-semibold transition-colors"
                 >
                   Forgot password?

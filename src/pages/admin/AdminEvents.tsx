@@ -5,6 +5,8 @@ import { api, ApiError } from '../../lib/api';
 import { loadCelebrities } from '../../lib/content';
 import type { Event, Celebrity } from '../../types';
 import { formatDate } from '../../lib/format';
+import { useToast } from '../../components/ui/ToastProvider';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 
 const STATUSES = ['upcoming', 'live', 'past', 'sold_out'] as const;
 
@@ -13,6 +15,8 @@ export default function AdminEvents() {
   const [celebs, setCelebs] = useState<Celebrity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const toast = useToast();
+  const confirm = useConfirm();
 
   const load = async () => {
     setLoading(true); setError('');
@@ -28,12 +32,19 @@ export default function AdminEvents() {
   useEffect(() => { load(); }, []);
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"? This is permanent.`)) return;
+    const ok = await confirm({
+      title: `Delete ${title}?`,
+      description: 'This is permanent and cannot be undone.',
+      confirmLabel: 'Delete',
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await api.events.remove(id);
       setEvents((es) => es.filter((e) => e.id !== id));
+      toast.success(`${title} deleted.`);
     } catch (e) {
-      alert(`Delete failed: ${e instanceof ApiError ? e.message : 'unknown error'}`);
+      toast.error(e instanceof ApiError ? e.message : 'Delete failed — unknown error.');
     }
   };
 
@@ -41,8 +52,9 @@ export default function AdminEvents() {
     try {
       const updated = await api.events.update(id, { status });
       setEvents((es) => es.map((e) => e.id === id ? updated : e));
+      toast.success(`Status updated to "${status}".`);
     } catch (e) {
-      alert(`Status update failed: ${e instanceof ApiError ? e.message : 'unknown error'}`);
+      toast.error(e instanceof ApiError ? e.message : 'Status update failed — unknown error.');
     }
   };
 

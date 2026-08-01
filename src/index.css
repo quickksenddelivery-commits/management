@@ -309,14 +309,17 @@ body {
   transform: translateY(0);
 }
 
-/* ── Film-grain overlay (premium texture) ── */
+/* ── Film-grain overlay (premium texture) ──
+   No mix-blend-mode: blending a fixed full-viewport layer against
+   everything beneath it forces a recomposite on every scroll/paint frame,
+   sitewide. Plain low-opacity noise reads almost identically at 4% and
+   costs nothing extra once rasterized. */
 .grain-overlay {
   position: fixed;
   inset: 0;
   z-index: 60;
   pointer-events: none;
   opacity: .04;
-  mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
